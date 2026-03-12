@@ -1,53 +1,68 @@
 <template>
-  <div>
-    <h1 class="mb-3">Dashboard</h1>
-    <button @click="logoutUser" class="btn btn-danger mb-3">Logout</button>
+  <div class="dashboard-container py-4">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body bg-light d-flex justify-content-between align-items-center">
+        <h1 class="h3 mb-0 text-primary fw-bold">Saját foglalásaim</h1>
+        <span class="badge bg-primary rounded-pill">{{ bookings.length }} db foglalás</span>
+      </div>
+    </div>
 
-    <booking-form @new-booking="loadBookings" />
-    <booking-list :bookings="bookings" @deleted="loadBookings" />
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <booking-list :bookings="bookings" @deleted="loadBookings" />
+      </div>
+    </div>
+    
+    <div v-if="bookings.length === 0" class="text-center mt-5 text-muted">
+      <i class="bi bi-calendar-x fs-1"></i>
+      <p class="mt-2">Még nincs egyetlen foglalásod sem.</p>
+      <router-link to="/" class="btn btn-outline-primary mt-2">Böngészés a hotelek között</router-link>
+    </div>
   </div>
 </template>
 
 <script>
 import API from '../api/api'
-import BookingForm from '../components/BookingForm.vue'
 import BookingList from '../components/BookingList.vue'
 
 export default {
-  components:{BookingForm, BookingList},
-  data() {
-    return {
-      bookings: []
-    }
-  },
-  methods: {
-    async logoutUser() {
-      await API.logout();
-      this.$router.push('/').catch(err => {
-        if (err.name !== 'NavigationDuplicated') {
-          throw err;
-        }
-      });
-    },
-    async loadBookings(){
-      this.bookings = await API.getBookings()
-    },
-    async created() {
-      const user = await API.me();
-      if (!user.id) {
-        this.$router.push('/');
-      } else {
-        this.fetchBookings();
+    name: 'Dashboard',
+    components: { BookingList },
+    data() {
+      return {
+        bookings: []
       }
-    }
-  },
-  mounted() {
+    },
+    methods: {
+      async loadBookings() {
+        try {
+          this.bookings = await API.getBookings();
+        } catch (e) {
+          console.error("Hiba a foglalások betöltésekor", e);
+        }
+      }
+    },
+    async mounted() {
       const token = localStorage.getItem('access_token');
       if (!token) {
-          this.$router.push('/login');
-          return;
+        this.$router.push('/login');
+        return;
       }
-      this.loadBookings();
-  }
+      
+      try {
+        await API.getMe();
+        await this.loadBookings();
+      } catch (e) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        this.$router.push('/login');
+      }
+    }
 }
 </script>
+
+<style scoped>
+.dashboard-container {
+  min-height: 70vh;
+}
+</style>

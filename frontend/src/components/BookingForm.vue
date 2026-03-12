@@ -38,8 +38,8 @@
               <p class="text-muted"><i class="bi bi-geo-alt-fill"></i> {{ hotel.address }}</p>
               <p class="card-text">{{ hotel.description }}</p>
 
-              <div class="bg-light p-3 rounded">
-                <h5 class="fw-bold mb-3">Választható szobák a megadott létszámra:</h5>
+              <div class="bg-light p-3 rounded" v-if="hotel.rooms && hotel.rooms.length > 0">
+                <h5 class="fw-bold mb-3">Választható szobák:</h5>
                 <div v-for="room in hotel.rooms" :key="room.id" class="d-flex justify-content-between align-items-center border-bottom py-2">
                   <div>
                     <span class="fw-bold">{{ room.type }}</span> 
@@ -52,7 +52,7 @@
                 </div>
               </div>
 
-              <div class="mt-4">
+              <div class="mt-4" v-if="hotel.reviews && hotel.reviews.length > 0">
                 <h6 class="fw-bold">Vendégek véleménye:</h6>
                 <div v-for="rev in hotel.reviews.slice(0, 3)" :key="rev.id" class="small border-start border-3 ps-2 mb-2">
                   <span class="text-warning">★ {{ rev.rating }}</span> - <em>"{{ rev.comment }}"</em>
@@ -62,6 +62,9 @@
           </div>
         </div>
       </div>
+    </div>
+    <div v-else-if="searched" class="text-center py-5 text-muted">
+       <h3>Nincs találat a megadott keresési feltételekkel.</h3>
     </div>
   </div>
 </template>
@@ -74,17 +77,19 @@ export default {
     return {
       today: new Date().toISOString().split('T')[0],
       search: { destination: '', check_in: '', check_out: '', guests: 1 },
-      hotels: []
+      hotels: [],
+      searched: false
     }
   },
   methods: {
     async performSearch() {
       try {
-        const query = `?destination=${this.search.destination}&check_in=${this.search.check_in}&check_out=${this.search.check_out}&guests=${this.search.guests}`;
-        const res = await fetch(`http://127.0.0.1:8000/hotels/search${query}`);
-        this.hotels = await res.json();
+        const data = await API.searchHotels(this.search);
+        this.hotels = data;
+        this.searched = true;
       } catch (e) {
-        alert("Hiba a keresés során!");
+        console.error("Keresési hiba:", e);
+        alert("Hiba történt a keresés során. Ellenőrizd a Backend futását!");
       }
     },
     async bookRoom(hotel, room) {
@@ -92,17 +97,35 @@ export default {
         alert("Kérlek, válassz dátumot a keresőben!");
         return;
       }
+      
       try {
-        await API.createBooking({
+        const bookingData = {
+          hotel_id: hotel.id,
           room_id: room.id,
           check_in: this.search.check_in,
           check_out: this.search.check_out,
           guests: this.search.guests
-        });
+        };
+
+        console.log("Küldés folyamatban:", bookingData);
+
+        await API.createBooking(bookingData);
+        
         alert("Sikeres foglalás!");
         this.$router.push('/dashboard');
+        
       } catch (e) {
-        alert("Jelentkezz be a foglaláshoz!");
+        console.error("Teljes hiba objektum:", e);
+
+        if (e.message) {
+          alert("Hiba: " + e.message);
+        } 
+        else if (e.errors) {
+          alert("Validációs hiba: " + Object.values(e.errors).flat().join('\n'));
+        }
+        else {
+          alert("Váratlan hiba történt. Nézd meg a konzolt!");
+        }
       }
     }
   }
@@ -110,6 +133,6 @@ export default {
 </script>
 
 <style scoped>
-.hotel-card { transition: transform 0.2s; border: 1px solid #ddd; }
-.hotel-card:hover { transform: translateY(-5px); border-color: #0d6efd; }
+.hotel-card { transition: transform 0.2s; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; }
+.hotel-card:hover { transform: translateY(-5px); border-color: #0d6efd; box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
 </style>

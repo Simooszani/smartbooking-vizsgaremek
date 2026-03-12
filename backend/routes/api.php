@@ -1,34 +1,35 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\HotelController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HotelController;
+use App\Http\Controllers\BookingController;
+use App\Http\Middleware\AdminMiddleware;
 
-/*
-|--------------------------------------------------------------------------
-| API Útvonalak
-|--------------------------------------------------------------------------
-| Ezek az útvonalak a http://127.0.0.1:8000/api/ alatt érhetőek el.
-*/
-
-// --- Publikus API végpontok ---
-Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-
-// Szállodák (Keresés és megtekintés bejelentkezés nélkül is)
+Route::post('/register', [AuthController::class, 'register']);
 Route::get('/hotels', [HotelController::class, 'index']);
 Route::get('/hotels/search', [HotelController::class, 'search']);
 Route::get('/hotels/{id}', [HotelController::class, 'show']);
 
-// --- Védett API végpontok (Csak érvényes Bearer tokennel) ---
 Route::middleware('auth:sanctum')->group(function () {
-    
-    // Felhasználó adatai és kijelentkezés
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    
+    Route::get('/bookings', [BookingController::class, 'index']);
+    Route::post('/bookings', [BookingController::class, 'store']);
+    
+    Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
 
-    // Foglalások (CRUD: index, store, show, update, destroy)
-    Route::apiResource('bookings', BookingController::class);
+    Route::middleware([AdminMiddleware::class])->group(function () {
+        Route::get('/admin/bookings', [BookingController::class, 'allBookings']);
+        Route::get('/admin/users', [AuthController::class, 'getAllUsers']);
+        Route::delete('/admin/users/{id}', [AuthController::class, 'deleteUser']);
+
+        Route::get('/admin/rooms', [HotelController::class, 'getAllRooms']);
+        Route::post('/admin/rooms', [HotelController::class, 'storeRoom']);
+        Route::put('/admin/rooms/{id}', [HotelController::class, 'updateRoom']);
+        Route::delete('/admin/rooms/{id}', [HotelController::class, 'deleteRoom']);
+    });
 });

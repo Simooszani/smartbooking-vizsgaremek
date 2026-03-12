@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Hotel;
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use App\Models\Room;
 
 class HotelController extends Controller
 {
+    public function index()
+    {
+        return response()->json(Hotel::all(), 200);
+    }
+
     public function search(Request $request)
     {
         $guests = $request->query('guests', 1);
@@ -50,5 +56,33 @@ class HotelController extends Controller
         }
 
         return response()->json($hotels->filter(fn($h) => $h->rooms->count() > 0)->values());
+    }
+
+    public function getAllRooms() {
+        return response()->json(Room::with('hotel')->get());
+    }
+
+    public function storeRoom(Request $request) {
+        $validated = $request->validate([
+            'hotel_id' => 'required|exists:hotels,id',
+            'type' => 'required|string',
+            'price_per_night' => 'required|numeric',
+            'capacity' => 'required|integer',
+            'description' => 'nullable|string'
+        ]);
+
+        $room = Room::create($validated);
+        return response()->json($room, 201);
+    }
+
+    public function updateRoom(Request $request, $id) {
+        $room = Room::findOrFail($id);
+        $room->update($request->all());
+        return response()->json($room);
+    }
+
+    public function deleteRoom($id) {
+        Room::destroy($id);
+        return response()->json(['message' => 'Szoba törölve']);
     }
 }

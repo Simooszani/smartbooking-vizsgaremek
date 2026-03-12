@@ -34,6 +34,8 @@
 
 <script>
 import API from '../api/api'
+import Swal from 'sweetalert2'
+
 export default {
   data() {
     return {
@@ -42,19 +44,49 @@ export default {
     }
   },
   methods: {
-    async handleSubmit() {
-      console.log("Küldés indítása...", this.isLogin ? "Login" : "Register"); // Ellenőrzéshez
+    showToast(icon, title) {
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+      Toast.fire({ icon, title });
+    },
+      async handleSubmit() {
       try {
         if (this.isLogin) {
-          await API.login(this.form.email, this.form.password);
-        } else {
-          const response = await API.register(this.form);
-          console.log("Backend válasza:", response);
+            await API.login({ 
+              email: this.form.email, 
+              password: this.form.password 
+            });
+            
+            localStorage.setItem('loginSuccess', 'true');
+
+            window.location.href = '/admin'; 
+          } else {
+          await API.register(this.form);
+          
+          await Swal.fire({
+            icon: 'success',
+            title: 'Sikeres regisztráció!',
+            text: 'Most már bejelentkezhetsz a fiókodba.',
+            confirmButtonColor: '#0d6efd'
+          });
+          
+          this.isLogin = true;
+          return; 
         }
-        this.$router.push('/dashboard');
+
+
       } catch (e) {
-        console.error("Hiba történt:", e);
-        alert("Hiba: " + (e.message || "Ismeretlen hiba történt a szerverrel való kommunikáció során."));
+        Swal.fire({
+          icon: 'error',
+          title: 'Hiba történt',
+          text: e.response?.data?.message || "Sikertelen művelet! Ellenőrizd az adataidat.",
+          confirmButtonColor: '#dc3545'
+        });
       }
     }
   }

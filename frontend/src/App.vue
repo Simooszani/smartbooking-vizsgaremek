@@ -1,17 +1,33 @@
 <template>
   <div id="app">
-    <Navbar />
+    <Navbar ref="navbar" />
     <router-view></router-view>
   </div>
 </template>
 
 <script>
 import Navbar from '@/components/Navbar.vue'
+import API from '@/api/api'
 
 export default {
   name: 'App',
   components: {
     Navbar
+  },
+  async mounted() {
+    // Validate token on app load - clear stale/invalid tokens
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      try {
+        await API.getMe();
+      } catch (e) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        if (this.$refs.navbar) {
+          this.$refs.navbar.$forceUpdate();
+        }
+      }
+    }
   }
 }
 </script>

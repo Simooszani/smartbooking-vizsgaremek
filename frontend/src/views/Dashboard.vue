@@ -1,32 +1,40 @@
 <template>
   <div class="dashboard-container py-4">
     <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 class="h3 mb-0 fw-bold text-primary-dark">
-            <i class="bi bi-calendar-check me-2"></i>{{ t('dashboard.title') }}
-          </h1>
-        </div>
-        <span class="badge bg-teal text-white px-3 py-2 rounded-pill">
-          {{ bookings.length }} {{ t('dashboard.count') }}
-        </span>
+      <!-- Loading state -->
+      <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-teal" role="status" style="width: 3rem; height: 3rem;"></div>
+        <p class="mt-3 text-muted">{{ t('common.loading') }}</p>
       </div>
 
-      <div class="card shadow-sm border-0 rounded-3" v-if="bookings.length > 0">
-        <div class="card-body p-0">
-          <booking-list :bookings="bookings" @deleted="loadBookings" />
+      <template v-else>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 mb-0 fw-bold text-primary-dark">
+              <i class="bi bi-calendar-check me-2"></i>{{ t('dashboard.title') }}
+            </h1>
+          </div>
+          <span class="badge bg-teal text-white px-3 py-2 rounded-pill">
+            {{ bookings.length }} {{ t('dashboard.count') }}
+          </span>
         </div>
-      </div>
 
-      <div v-else class="text-center py-5 mt-3">
-        <div class="empty-state-icon mb-3">
-          <i class="bi bi-calendar-x"></i>
+        <div class="card shadow-sm border-0 rounded-3" v-if="bookings.length > 0">
+          <div class="card-body p-0">
+            <booking-list :bookings="bookings" @deleted="loadBookings" />
+          </div>
         </div>
-        <h4 class="text-muted">{{ t('dashboard.empty') }}</h4>
-        <router-link to="/" class="btn btn-teal mt-3 rounded-pill px-4">
-          <i class="bi bi-search me-2"></i>{{ t('dashboard.browse') }}
-        </router-link>
-      </div>
+
+        <div v-else class="text-center py-5 mt-3">
+          <div class="empty-state-icon mb-3">
+            <i class="bi bi-calendar-x"></i>
+          </div>
+          <h4 class="text-muted">{{ t('dashboard.empty') }}</h4>
+          <router-link to="/" class="btn btn-teal mt-3 rounded-pill px-4">
+            <i class="bi bi-search me-2"></i>{{ t('dashboard.browse') }}
+          </router-link>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -40,7 +48,8 @@ export default {
     components: { BookingList },
     data() {
       return {
-        bookings: []
+        bookings: [],
+        loading: true
       }
     },
     methods: {
@@ -66,6 +75,8 @@ export default {
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
         this.$router.push('/login');
+      } finally {
+        this.loading = false;
       }
     }
 }
@@ -75,6 +86,7 @@ export default {
 .dashboard-container { min-height: 70vh; }
 .text-primary-dark { color: #264653; }
 .bg-teal { background: #2a9d8f; }
+.text-teal { color: #2a9d8f; }
 .btn-teal { background: #2a9d8f; color: #fff; border: none; font-weight: 600; }
 .btn-teal:hover { background: #238b7e; color: #fff; }
 .empty-state-icon {

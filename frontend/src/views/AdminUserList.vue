@@ -36,10 +36,7 @@
                 <td>{{ new Date(user.created_at).toLocaleDateString('hu-HU') }}</td>
                 <td class="text-center">
                   <button 
-                    @click="handleDelete(user.id)" 
-                    class="btn btn-outline-danger btn-sm rounded-pill"
-                    :disabled="user.is_admin"
-                  >
+                    @click="handleDelete(user.id)" class="btn btn-outline-danger btn-sm rounded-pill" :disabled="user.id === currentUserId" >
                     <i class="bi bi-person-x-fill"></i> Törlés
                   </button>
                 </td>
@@ -62,7 +59,8 @@ export default {
   components: { AdminSidebar },
   data() {
     return {
-      users: []
+      users: [],
+      currentUserId: null
     }
   },
   methods: {
@@ -80,6 +78,7 @@ export default {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Igen, töröld!',
         cancelButtonText: 'Mégse'
       });
@@ -87,16 +86,32 @@ export default {
       if (result.isConfirmed) {
         try {
           await api.deleteUser(id);
-          Swal.fire('Törölve!', 'A felhasználó eltávolítva.', 'success');
+          
+          Swal.fire({
+            title: 'Törölve!',
+            text: 'A felhasználó eltávolítva.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
+          
           this.fetchUsers();
         } catch (e) {
-          Swal.fire('Hiba!', 'Nem sikerült a törlés.', 'error');
+          Swal.fire({
+            title: 'Hiba!',
+            text: e.message || 'Nem sikerült a törlés.',
+            icon: 'error'
+          });
         }
       }
     }
   },
   mounted() {
     this.fetchUsers();
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      this.currentUserId = JSON.parse(userData).id;
+    }
   }
 }
 </script>

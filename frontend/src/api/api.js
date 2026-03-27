@@ -210,7 +210,7 @@ const api = {
     },
 
     async getAllHotels() {
-        const response = await fetch('http://localhost:8000/api/hotels');
+        const response = await fetch(`${BASE_URL}/hotels`);
         if (!response.ok) throw new Error('Hiba a hotelek lekérésekor');
         return await response.json();
     },

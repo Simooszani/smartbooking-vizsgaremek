@@ -93,11 +93,18 @@ export default {
       }
     },
     async bookRoom(hotel, room) {
-      if(!this.search.check_in || !this.search.check_out) {
+      if (!this.search.check_in || !this.search.check_out) {
         alert("Kérlek, válassz dátumot a keresőben!");
         return;
       }
-      
+
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        alert("A foglaláshoz be kell jelentkezned!");
+        this.$router.push('/login');
+        return;
+      }
+
       try {
         const bookingData = {
           hotel_id: hotel.id,
@@ -115,16 +122,14 @@ export default {
         this.$router.push('/dashboard');
         
       } catch (e) {
-        console.error("Teljes hiba objektum:", e);
-
-        if (e.message) {
-          alert("Hiba: " + e.message);
-        } 
-        else if (e.errors) {
-          alert("Validációs hiba: " + Object.values(e.errors).flat().join('\n'));
-        }
-        else {
-          alert("Váratlan hiba történt. Nézd meg a konzolt!");
+        console.error("Hiba történt:", e);
+        
+        if (e.status === 401 || (e.message && e.message.includes('Unauthenticated'))) {
+          alert("Lejárt a munkameneted, kérlek jelentkezz be újra!");
+          localStorage.removeItem('access_token');
+          this.$router.push('/login');
+        } else {
+          alert(e.message || "Sikertelen foglalás. Talán már foglalt a szoba?");
         }
       }
     }

@@ -3,62 +3,53 @@
     <AdminSidebar />
 
     <div class="main-content flex-grow-1 p-4" style="margin-left: 260px;">
-      
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 class="fw-bold text-dark m-0">Foglalások Kezelése</h2>
-          <p class="text-muted small mb-0">Rendszer adminisztráció és statisztikák</p>
+          <h2 class="fw-bold text-primary-dark m-0">{{ t('admin.bookings_management') }}</h2>
+          <p class="text-muted small mb-0">{{ t('admin.system_admin') }}</p>
         </div>
         <div class="text-end">
-          <span class="badge bg-white text-dark shadow-sm p-2 border">
-            <i class="bi bi-calendar3 me-2 text-danger"></i>{{ currentFriendlyDate }}
+          <span class="badge bg-white text-dark shadow-sm p-2 border rounded-pill">
+            <i class="bi bi-calendar3 me-2 text-teal"></i>{{ currentFriendlyDate }}
           </span>
         </div>
       </div>
 
-      <div v-if="!loading" class="row mb-4">
-        <div class="col-md-4 mb-3 mb-md-0">
-          <div class="card h-100 shadow-sm border-0 border-start border-danger border-5">
-            <div class="card-body">
-              <h6 class="text-muted text-uppercase small fw-bold">Összes foglalás</h6>
-              <h3 class="fw-bold mb-0 text-danger">{{ allBookings.length }} db</h3>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4 mb-3 mb-md-0">
-          <div class="card h-100 shadow-sm border-0 border-start border-warning border-5">
-            <div class="card-body">
-              <h6 class="text-muted text-uppercase small fw-bold">Egyedi vendégek</h6>
-              <h3 class="fw-bold mb-0 text-warning">{{ uniqueGuestsCount }} fő</h3>
-            </div>
-          </div>
-        </div>
-
+      <div v-if="!loading" class="row mb-4 g-3">
         <div class="col-md-4">
-          <div class="card h-100 shadow-sm border-0 border-start border-success border-5">
-            <div class="card-body">
-              <h6 class="text-muted text-uppercase small fw-bold">Rendszer állapot</h6>
-              <h3 class="fw-bold mb-0 text-success small">Online / Aktív</h3>
-            </div>
+          <div class="stat-card border-teal">
+            <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.total_bookings') }}</h6>
+            <h3 class="fw-bold mb-0 text-teal">{{ allBookings.length }} {{ t('admin.pieces') }}</h3>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card border-accent">
+            <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.unique_guests') }}</h6>
+            <h3 class="fw-bold mb-0 text-accent">{{ uniqueGuestsCount }} {{ t('admin.person') }}</h3>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card border-success">
+            <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.system_status') }}</h6>
+            <h3 class="fw-bold mb-0 text-success small">{{ t('admin.online') }}</h3>
           </div>
         </div>
       </div>
 
       <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-0"> <div v-if="loading" class="text-center my-5 p-5">
-            <div class="spinner-border text-danger" role="status" style="width: 3rem; height: 3rem;"></div>
-            <p class="mt-3 fw-bold text-muted">Adatok betöltése...</p>
+        <div class="card-body p-0">
+          <div v-if="loading" class="text-center my-5 p-5">
+            <div class="spinner-border text-teal" role="status" style="width: 3rem; height: 3rem;"></div>
+            <p class="mt-3 fw-bold text-muted">{{ t('admin.loading') }}</p>
           </div>
 
-          <AdminBookingList 
-            v-else 
-            :bookings="allBookings" 
-            @refresh="fetchAdminData" 
+          <AdminBookingList
+            v-else
+            :bookings="allBookings"
+            @refresh="fetchAdminData"
           />
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -71,10 +62,7 @@ import Swal from 'sweetalert2'
 
 export default {
   name: 'AdminDashboard',
-  components: {
-    AdminBookingList,
-    AdminSidebar
-  },
+  components: { AdminBookingList, AdminSidebar },
   data() {
     return {
       allBookings: [],
@@ -88,11 +76,9 @@ export default {
       return new Set(emails).size;
     },
     currentFriendlyDate() {
-      return new Date().toLocaleDateString('hu-HU', { 
-        year: 'numeric',
-        month: 'long', 
-        day: 'numeric', 
-        weekday: 'long' 
+      const loc = this.currentLocale === 'hu' ? 'hu-HU' : 'en-US';
+      return new Date().toLocaleDateString(loc, {
+        year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
       });
     }
   },
@@ -110,46 +96,35 @@ export default {
   },
   mounted() {
     this.fetchAdminData();
-
     if (localStorage.getItem('loginSuccess')) {
       setTimeout(() => {
-        const Toast = Swal.mixin({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3500,
-          timerProgressBar: true,
-        });
-
-        Toast.fire({
-          icon: 'success',
-          title: 'Sikeres bejelentkezés!'
-        });
-
+        Swal.mixin({
+          toast: true, position: 'top-end', showConfirmButton: false,
+          timer: 3500, timerProgressBar: true,
+        }).fire({ icon: 'success', title: this.t('login.success') });
         localStorage.removeItem('loginSuccess');
-      }, 500); 
+      }, 500);
     }
   }
 }
 </script>
 
 <style scoped>
-.main-content {
-  transition: all 0.3s;
-  background-color: #f8f9fa;
+.text-primary-dark { color: #264653; }
+.text-teal { color: #2a9d8f; }
+.text-accent { color: #e9c46a; }
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-left: 5px solid transparent;
 }
-
-.card {
-  transition: transform 0.2s ease;
-}
-
-.border-5 {
-  border-left-width: 5px !important;
-}
+.border-teal { border-left-color: #2a9d8f !important; }
+.border-accent { border-left-color: #e9c46a !important; }
+.border-success { border-left-color: #198754 !important; }
 
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: 0 !important;
-  }
+  .main-content { margin-left: 0 !important; }
 }
 </style>

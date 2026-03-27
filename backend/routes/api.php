@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Middleware\AdminMiddleware;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -16,11 +17,12 @@ Route::get('/hotels/{id}', [HotelController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
-    
+
     Route::get('/bookings', [BookingController::class, 'index']);
     Route::post('/bookings', [BookingController::class, 'store']);
-    
     Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
+
+    Route::post('/reviews', [ReviewController::class, 'store']);
 
     Route::middleware([AdminMiddleware::class])->group(function () {
         Route::get('/admin/bookings', [BookingController::class, 'allBookings']);
@@ -31,5 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/rooms', [HotelController::class, 'storeRoom']);
         Route::put('/admin/rooms/{id}', [HotelController::class, 'updateRoom']);
         Route::delete('/admin/rooms/{id}', [HotelController::class, 'deleteRoom']);
+
+        Route::post('/admin/hotels', [HotelController::class, 'store']);
+        Route::put('/admin/hotels/{id}', [HotelController::class, 'update']);
+        Route::delete('/admin/hotels/{id}', [HotelController::class, 'destroy']);
     });
 });

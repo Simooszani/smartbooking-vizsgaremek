@@ -19,10 +19,18 @@ class DatabaseSeeder extends Seeder
             'name' => 'Teszt Felhasználó',
             'email' => 'teszt@teszt.hu',
             'password' => Hash::make('password123'),
+            'is_admin' => false,
+        ]);
+
+        User::create([
+            'name' => 'Admin Felhasználó',
+            'email' => 'admin@smartbooking.hu',
+            'password' => Hash::make('admin123'),
+            'is_admin' => true,
         ]);
 
         Hotel::factory(500)->create()->each(function ($hotel) {
-            
+
             $roomCount = rand(5, 30);
             Room::factory($roomCount)->create([
                 'hotel_id' => $hotel->id

@@ -1,68 +1,108 @@
 <template>
   <div>
-    <h3>Foglalások listája</h3>
-    <table class="table table-striped table-hover mt-3">
-      <thead class="table-dark">
-        <tr>
-          <th>Szálloda / Szoba</th>
-          <th>Időszak</th>
-          <th>Vendégek</th>
-          <th>Státusz</th>
-          <th>Művelet</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="b in bookings" :key="b.id">
-          <td>
-            <div v-if="b.room">
-              <strong class="d-block">{{ b.room.hotel ? b.room.hotel.name : 'Szálloda' }}</strong>
-              
-              <span class="badge bg-info text-dark me-1">{{ b.room.type }}</span>
-              
-              <small class="text-muted">
-                {{ b.room.room_number ? b.room.room_number + '. szoba' : '(' + b.room.capacity + ' fős férőhely)' }}
-              </small>
-            </div>
-            <span v-else class="text-danger">Nincs szoba adat</span>
-          </td>
-          
-          <td>
-            {{ b.check_in }} <br> 
-            <small class="text-muted">ig: {{ b.check_out }}</small>
-          </td>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">{{ t('dashboard.hotel') }}</th>
+            <th>{{ t('dashboard.period') }}</th>
+            <th class="text-center">{{ t('dashboard.guests') }}</th>
+            <th class="text-center">{{ t('dashboard.status') }}</th>
+            <th class="text-center">{{ t('dashboard.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="b in bookings" :key="b.id">
+            <td class="ps-4">
+              <div v-if="b.room">
+                <strong class="d-block text-primary-dark">{{ b.room.hotel ? b.room.hotel.name : '' }}</strong>
+                <span class="badge bg-teal-light text-teal me-1">{{ b.room.type }}</span>
+                <small class="text-muted">
+                  ({{ b.room.capacity }} {{ t('dashboard.person') }})
+                </small>
+              </div>
+              <span v-else class="text-danger small">{{ t('dashboard.no_room') }}</span>
+            </td>
 
-          <td class="text-center">{{ b.guests }} fő</td>
+            <td>
+              <div class="fw-semibold small">{{ formatDate(b.check_in) }}</div>
+              <div class="text-muted small">{{ formatDate(b.check_out) }}</div>
+            </td>
 
-          <td>
-            <span class="badge bg-success">{{ b.status }}</span>
-          </td>
+            <td class="text-center">
+              <span class="badge bg-light text-dark border">{{ b.guests }} {{ t('dashboard.person') }}</span>
+            </td>
 
-          <td>
-            <button @click="deleteBooking(b.id)" class="btn btn-sm btn-danger">Törlés</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <td class="text-center">
+              <span class="badge bg-success-light text-success">{{ b.status }}</span>
+            </td>
+
+            <td class="text-center">
+              <button @click="deleteBooking(b.id)" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                <i class="bi bi-x-circle me-1"></i>{{ t('dashboard.delete') }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <script>
 import API from '../api/api'
+import Swal from 'sweetalert2'
 
 export default {
   props: ['bookings'],
   methods: {
+    formatDate(dateStr) {
+      if (!dateStr) return '-';
+      return new Date(dateStr).toLocaleDateString(this.currentLocale === 'hu' ? 'hu-HU' : 'en-US', {
+        year: 'numeric', month: 'short', day: '2-digit'
+      });
+    },
     async deleteBooking(id) {
-      if (confirm('Biztosan törölni szeretnéd ezt a foglalást?')) {
+      const result = await Swal.fire({
+        title: this.t('dashboard.delete_confirm_title'),
+        text: this.t('dashboard.delete_confirm_text'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e76f51',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: this.t('dashboard.delete_confirm_btn'),
+        cancelButtonText: this.t('dashboard.cancel_btn'),
+        reverseButtons: true
+      });
+
+      if (result.isConfirmed) {
         try {
           await API.deleteBooking(id);
+          Swal.fire({
+            title: this.t('dashboard.deleted'),
+            text: this.t('dashboard.deleted_text'),
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
           this.$emit('deleted');
         } catch (error) {
-          console.error("Hiba a törlésnél:", error);
-          alert("Nem sikerült törölni a foglalást.");
+          Swal.fire({
+            title: this.t('common.error'),
+            text: this.t('dashboard.delete_error'),
+            icon: 'error',
+            confirmButtonColor: '#e76f51'
+          });
         }
       }
     }
   }
 }
 </script>
+
+<style scoped>
+.text-primary-dark { color: #264653; }
+.text-teal { color: #2a9d8f; }
+.bg-teal-light { background: #e8f8f5; }
+.bg-success-light { background: #e8f5e9; }
+</style>

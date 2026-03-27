@@ -1,10 +1,7 @@
 <template>
   <div id="app">
     <Navbar />
-
-    <div class="container mt-4">
-      <router-view></router-view>
-    </div>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -20,15 +17,43 @@ export default {
 </script>
 
 <style>
-@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
-@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --sb-primary: #264653;
+  --sb-secondary: #2a9d8f;
+  --sb-accent: #e9c46a;
+  --sb-warm: #f4a261;
+  --sb-coral: #e76f51;
+  --sb-light: #f8f9fa;
+  --sb-dark: #1a1a2e;
+}
 
 body {
-  background-color: #f4f7f6;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--sb-light);
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
 #app {
   min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: var(--sb-secondary); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sb-primary); }
+
+/* SweetAlert2 custom theme */
+.swal2-popup {
+  font-family: 'Inter', sans-serif !important;
+  border-radius: 16px !important;
+}
+.swal2-confirm {
+  border-radius: 8px !important;
+}
+.swal2-cancel {
+  border-radius: 8px !important;
 }
 </style>

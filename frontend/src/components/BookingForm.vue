@@ -1,76 +1,158 @@
 <template>
   <div class="booking-system">
-    <div class="card bg-warning shadow-sm mb-5 p-4 border-0">
-      <h2 class="mb-3 text-dark fw-bold">Találd meg a tökéletes szállást!</h2>
-      <div class="row g-2">
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Úticél</label>
-          <input v-model="search.destination" type="text" class="form-control" placeholder="Hová mész?">
+    <!-- Search form -->
+    <div class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.destination') }}</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-geo-alt text-coral"></i></span>
+          <input v-model="search.destination" type="text" class="form-control border-start-0 ps-0"
+            :placeholder="t('search.destination_placeholder')">
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Érkezés</label>
-          <input v-model="search.check_in" type="date" class="form-control" :min="today">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.check_in') }}</label>
+        <input v-model="search.check_in" type="date" class="form-control" :min="today">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.check_out') }}</label>
+        <input v-model="search.check_out" type="date" class="form-control" :min="search.check_in || today">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.guests') }}</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-people text-coral"></i></span>
+          <input v-model.number="search.guests" type="number" class="form-control border-start-0 ps-0" min="1" max="10">
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Távozás</label>
-          <input v-model="search.check_out" type="date" class="form-control" :min="search.check_in">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold">Vendégek</label>
-          <input v-model.number="search.guests" type="number" class="form-control" min="1">
-        </div>
-        <div class="col-12 mt-3">
-          <button @click="performSearch" class="btn btn-primary btn-lg w-100 fw-bold">KERESÉS</button>
-        </div>
+      </div>
+      <div class="col-md-2">
+        <button @click="performSearch" class="btn btn-search w-100 py-2" :disabled="searching">
+          <span v-if="searching" class="spinner-border spinner-border-sm me-1"></span>
+          <i v-else class="bi bi-search me-1"></i>
+          {{ t('search.search_btn') }}
+        </button>
       </div>
     </div>
 
-    <div v-if="hotels.length > 0">
-      <div v-for="hotel in hotels" :key="hotel.id" class="card mb-4 shadow-sm hotel-card">
-        <div class="row g-0">
-          <div class="col-md-4 position-relative">
-            <img :src="'https://loremflickr.com/400/300/hotel?lock=' + hotel.id" class="img-fluid h-100 rounded-start" style="object-fit: cover;">
-            <div class="position-absolute top-0 end-0 m-2 badge bg-primary fs-6">{{ hotel.rating }} ★</div>
-          </div>
-          <div class="col-md-8">
-            <div class="card-body">
-              <h3 class="card-title fw-bold text-primary">{{ hotel.name }}</h3>
-              <p class="text-muted"><i class="bi bi-geo-alt-fill"></i> {{ hotel.address }}</p>
-              <p class="card-text">{{ hotel.description }}</p>
-
-              <div class="bg-light p-3 rounded" v-if="hotel.rooms && hotel.rooms.length > 0">
-                <h5 class="fw-bold mb-3">Választható szobák:</h5>
-                <div v-for="room in hotel.rooms" :key="room.id" class="d-flex justify-content-between align-items-center border-bottom py-2">
-                  <div>
-                    <span class="fw-bold">{{ room.type }}</span> 
-                    <small class="text-muted ms-2">({{ room.capacity }} főig)</small>
-                  </div>
-                  <div class="text-end">
-                    <div class="fw-bold text-success fs-5">{{ room.price_per_night }} Ft / éj</div>
-                    <button @click="bookRoom(hotel, room)" class="btn btn-sm btn-outline-primary mt-1">Kiválasztás</button>
+    <!-- Results -->
+    <div v-if="hotels.length > 0" class="mt-5">
+      <div class="row g-4">
+        <div class="col-12" v-for="hotel in hotels" :key="hotel.id">
+          <div class="hotel-card" :class="{ 'hotel-card-expanded': expandedHotel === hotel.id }">
+            <!-- Hotel header - clickable -->
+            <div class="hotel-header" @click="toggleHotel(hotel.id)">
+              <div class="row g-0 align-items-center">
+                <div class="col-md-3">
+                  <div class="hotel-img-wrapper">
+                    <img :src="'https://picsum.photos/seed/hotel' + hotel.id + '/400/280'"
+                      :alt="hotel.name" class="hotel-img">
+                    <div class="hotel-rating-badge">
+                      <i class="bi bi-star-fill me-1"></i>{{ hotel.rating }}
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div class="mt-4" v-if="hotel.reviews && hotel.reviews.length > 0">
-                <h6 class="fw-bold">Vendégek véleménye:</h6>
-                <div v-for="rev in hotel.reviews.slice(0, 3)" :key="rev.id" class="small border-start border-3 ps-2 mb-2">
-                  <span class="text-warning">★ {{ rev.rating }}</span> - <em>"{{ rev.comment }}"</em>
+                <div class="col-md-7">
+                  <div class="hotel-info px-3 py-2">
+                    <h4 class="hotel-name mb-1">{{ hotel.name }}</h4>
+                    <p class="hotel-address mb-1">
+                      <i class="bi bi-geo-alt-fill text-coral me-1"></i>{{ hotel.address }}
+                    </p>
+                    <p class="hotel-desc text-muted small mb-0" v-if="hotel.description">
+                      {{ hotel.description.length > 120 ? hotel.description.substring(0, 120) + '...' : hotel.description }}
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-2 text-center">
+                  <div class="hotel-price-preview py-2">
+                    <div class="price-from text-muted small">{{ getMinPrice(hotel) }}</div>
+                    <div class="fw-bold text-coral">Ft / {{ currentLocale === 'hu' ? 'éj' : 'night' }}</div>
+                    <button class="btn btn-sm btn-outline-teal mt-2 rounded-pill px-3">
+                      <i class="bi" :class="expandedHotel === hotel.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                      {{ expandedHotel === hotel.id ? t('hotel.hide_rooms') : t('hotel.show_rooms') }}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <!-- Expanded content: rooms + reviews -->
+            <transition name="slide">
+              <div v-if="expandedHotel === hotel.id" class="hotel-details">
+                <!-- Rooms -->
+                <div class="rooms-section p-4" v-if="hotel.rooms && hotel.rooms.length > 0">
+                  <h5 class="fw-bold text-primary-dark mb-3">
+                    <i class="bi bi-door-open me-2"></i>{{ t('hotel.rooms') }}
+                  </h5>
+                  <div class="row g-3">
+                    <div class="col-md-6 col-lg-4" v-for="room in hotel.rooms" :key="room.id">
+                      <div class="room-card">
+                        <div class="room-type-badge">{{ room.type }}</div>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                          <div>
+                            <span class="text-muted small">
+                              <i class="bi bi-people-fill me-1"></i>{{ room.capacity }} {{ t('hotel.capacity') }}
+                            </span>
+                          </div>
+                          <div class="text-end">
+                            <div class="room-price">{{ Number(room.price_per_night).toLocaleString('hu-HU') }}</div>
+                            <div class="room-price-label">{{ t('hotel.per_night') }}</div>
+                          </div>
+                        </div>
+                        <button @click.stop="bookRoom(hotel, room)" class="btn btn-coral btn-sm w-100 mt-3 rounded-pill">
+                          <i class="bi bi-calendar-plus me-1"></i>{{ t('hotel.select') }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Reviews -->
+                <div class="reviews-section p-4 border-top" v-if="hotel.reviews">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-primary-dark mb-0">
+                      <i class="bi bi-chat-quote me-2"></i>{{ t('hotel.reviews') }}
+                      <span class="badge bg-light text-muted ms-2" v-if="hotel.reviews.length">{{ hotel.reviews.length }}</span>
+                    </h5>
+                    <button @click.stop="openReviewModal(hotel)" class="btn btn-sm btn-outline-teal rounded-pill px-3">
+                      <i class="bi bi-pencil-square me-1"></i>{{ t('hotel.write_review') }}
+                    </button>
+                  </div>
+                  <div v-if="hotel.reviews.length > 0">
+                    <div class="row g-2">
+                      <div class="col-md-6" v-for="rev in hotel.reviews.slice(0, 4)" :key="rev.id">
+                        <div class="review-card">
+                          <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold small">{{ rev.user ? rev.user.name : 'Anonymous' }}</span>
+                            <span class="review-stars">
+                              <i v-for="n in 5" :key="n" class="bi" :class="n <= rev.rating ? 'bi-star-fill text-warning' : 'bi-star text-muted'"></i>
+                            </span>
+                          </div>
+                          <p class="review-text mb-0">"{{ rev.comment }}"</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p v-else class="text-muted small">{{ t('hotel.no_reviews') }}</p>
+                </div>
+              </div>
+            </transition>
           </div>
         </div>
       </div>
     </div>
-    <div v-else-if="searched" class="text-center py-5 text-muted">
-       <h3>Nincs találat a megadott keresési feltételekkel.</h3>
+
+    <!-- No results -->
+    <div v-else-if="searched" class="text-center py-5 mt-4">
+      <i class="bi bi-emoji-frown display-1 text-muted"></i>
+      <h4 class="mt-3 text-muted">{{ t('search.no_results') }}</h4>
+      <p class="text-muted">{{ t('search.no_results_hint') }}</p>
     </div>
   </div>
 </template>
 
 <script>
 import API from '../api/api'
+import Swal from 'sweetalert2'
 
 export default {
   data() {
@@ -78,30 +160,61 @@ export default {
       today: new Date().toISOString().split('T')[0],
       search: { destination: '', check_in: '', check_out: '', guests: 1 },
       hotels: [],
-      searched: false
+      searched: false,
+      searching: false,
+      expandedHotel: null
     }
   },
   methods: {
     async performSearch() {
+      this.searching = true;
       try {
         const data = await API.searchHotels(this.search);
         this.hotels = data;
         this.searched = true;
+        this.expandedHotel = null;
       } catch (e) {
-        console.error("Keresési hiba:", e);
-        alert("Hiba történt a keresés során. Ellenőrizd a Backend futását!");
+        Swal.fire({
+          icon: 'error',
+          title: this.t('common.error'),
+          text: this.t('booking.error'),
+          confirmButtonColor: '#e76f51'
+        });
+      } finally {
+        this.searching = false;
       }
     },
+
+    toggleHotel(hotelId) {
+      this.expandedHotel = this.expandedHotel === hotelId ? null : hotelId;
+    },
+
+    getMinPrice(hotel) {
+      if (!hotel.rooms || hotel.rooms.length === 0) return '—';
+      const min = Math.min(...hotel.rooms.map(r => Number(r.price_per_night)));
+      return Number(min).toLocaleString('hu-HU');
+    },
+
     async bookRoom(hotel, room) {
       if (!this.search.check_in || !this.search.check_out) {
-        alert("Kérlek, válassz dátumot a keresőben!");
+        Swal.fire({
+          icon: 'warning',
+          title: this.t('booking.date_required'),
+          confirmButtonColor: '#264653'
+        });
         return;
       }
 
       const token = localStorage.getItem('access_token');
       if (!token) {
-        alert("A foglaláshoz be kell jelentkezned!");
-        this.$router.push('/login');
+        Swal.fire({
+          icon: 'info',
+          title: this.t('booking.login_required'),
+          confirmButtonColor: '#e76f51',
+          confirmButtonText: this.t('navbar.login')
+        }).then(() => {
+          this.$router.push('/login');
+        });
         return;
       }
 
@@ -114,22 +227,102 @@ export default {
           guests: this.search.guests
         };
 
-        console.log("Küldés folyamatban:", bookingData);
-
         await API.createBooking(bookingData);
-        
-        alert("Sikeres foglalás!");
-        this.$router.push('/dashboard');
-        
+
+        Swal.fire({
+          icon: 'success',
+          title: this.t('booking.success'),
+          text: this.t('booking.success_text'),
+          confirmButtonColor: '#2a9d8f'
+        }).then(() => {
+          this.$router.push('/dashboard');
+        });
+
       } catch (e) {
-        console.error("Hiba történt:", e);
-        
         if (e.status === 401 || (e.message && e.message.includes('Unauthenticated'))) {
-          alert("Lejárt a munkameneted, kérlek jelentkezz be újra!");
+          Swal.fire({
+            icon: 'warning',
+            title: this.t('booking.session_expired'),
+            confirmButtonColor: '#e76f51'
+          });
           localStorage.removeItem('access_token');
           this.$router.push('/login');
         } else {
-          alert(e.message || "Sikertelen foglalás. Talán már foglalt a szoba?");
+          Swal.fire({
+            icon: 'error',
+            title: this.t('booking.failed'),
+            text: e.message || this.t('booking.room_taken'),
+            confirmButtonColor: '#e76f51'
+          });
+        }
+      }
+    },
+
+    async openReviewModal(hotel) {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        Swal.fire({
+          icon: 'info',
+          title: this.t('review.login_required'),
+          confirmButtonColor: '#e76f51'
+        });
+        return;
+      }
+
+      const { value: formValues } = await Swal.fire({
+        title: this.t('review.title'),
+        html:
+          `<div class="text-start mb-3">
+            <label class="form-label fw-semibold">${this.t('review.rating_label')}</label>
+            <select id="swal-rating" class="form-select">
+              <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5)</option>
+              <option value="4">&#9733;&#9733;&#9733;&#9733;&#9734; (4)</option>
+              <option value="3">&#9733;&#9733;&#9733;&#9734;&#9734; (3)</option>
+              <option value="2">&#9733;&#9733;&#9734;&#9734;&#9734; (2)</option>
+              <option value="1">&#9733;&#9734;&#9734;&#9734;&#9734; (1)</option>
+            </select>
+          </div>
+          <div class="text-start">
+            <label class="form-label fw-semibold">${this.t('review.comment_label')}</label>
+            <textarea id="swal-comment" class="form-control" rows="3" placeholder="${this.t('review.comment_placeholder')}"></textarea>
+          </div>`,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: this.t('review.submit'),
+        cancelButtonText: this.t('common.cancel'),
+        confirmButtonColor: '#2a9d8f',
+        preConfirm: () => {
+          const comment = document.getElementById('swal-comment').value;
+          if (!comment.trim()) {
+            Swal.showValidationMessage(this.t('review.comment_placeholder'));
+            return false;
+          }
+          return {
+            hotel_id: hotel.id,
+            rating: parseInt(document.getElementById('swal-rating').value),
+            comment: comment
+          }
+        }
+      });
+
+      if (formValues) {
+        try {
+          const newReview = await API.createReview(formValues);
+          hotel.reviews.unshift(newReview);
+
+          Swal.fire({
+            icon: 'success',
+            title: this.t('review.success'),
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } catch (e) {
+          Swal.fire({
+            icon: 'error',
+            title: this.t('common.error'),
+            text: e.message || this.t('review.already_reviewed'),
+            confirmButtonColor: '#e76f51'
+          });
         }
       }
     }
@@ -138,6 +331,123 @@ export default {
 </script>
 
 <style scoped>
-.hotel-card { transition: transform 0.2s; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; }
-.hotel-card:hover { transform: translateY(-5px); border-color: #0d6efd; box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+.text-coral { color: #e76f51; }
+.text-primary-dark { color: #264653; }
+
+.btn-search {
+  background: linear-gradient(135deg, #2a9d8f, #264653);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  transition: all 0.3s;
+}
+.btn-search:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(42,157,143,0.4); color: #fff; }
+
+.btn-coral {
+  background: #e76f51;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+}
+.btn-coral:hover { background: #d45d3f; color: #fff; }
+
+.btn-outline-teal {
+  border: 2px solid #2a9d8f;
+  color: #2a9d8f;
+  font-weight: 500;
+}
+.btn-outline-teal:hover { background: #2a9d8f; color: #fff; }
+
+/* Hotel card */
+.hotel-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+.hotel-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+.hotel-card-expanded { border-color: #2a9d8f; box-shadow: 0 8px 30px rgba(42,157,143,0.15); }
+
+.hotel-header { cursor: pointer; transition: background 0.2s; }
+.hotel-header:hover { background: #fafafa; }
+
+.hotel-img-wrapper { position: relative; overflow: hidden; height: 180px; }
+.hotel-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.hotel-header:hover .hotel-img { transform: scale(1.05); }
+
+.hotel-rating-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(38,70,83,0.9);
+  color: #e9c46a;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.hotel-name { color: #264653; font-weight: 700; font-size: 1.15rem; }
+.hotel-address { color: #666; font-size: 0.9rem; }
+
+.price-from { font-size: 1.2rem; font-weight: 700; color: #264653; }
+
+/* Room card */
+.room-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid #eee;
+  transition: all 0.2s;
+}
+.room-card:hover { border-color: #2a9d8f; background: #f0faf8; }
+
+.room-type-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #264653, #2a9d8f);
+  color: #fff;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.room-price { font-size: 1.1rem; font-weight: 700; color: #264653; }
+.room-price-label { font-size: 0.7rem; color: #999; }
+
+/* Review card */
+.review-card {
+  background: #fafaf5;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid #e9c46a;
+}
+.review-text { font-style: italic; font-size: 0.85rem; color: #555; }
+.review-stars { font-size: 0.75rem; }
+
+/* Slide transition */
+.slide-enter-active, .slide-leave-active {
+  transition: all 0.35s ease;
+  max-height: 1000px;
+  overflow: hidden;
+}
+.slide-enter, .slide-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #2a9d8f;
+  box-shadow: 0 0 0 0.2rem rgba(42,157,143,0.15);
+}
+.input-group-text {
+  border-color: #dee2e6;
+}
+
+@media (max-width: 768px) {
+  .hotel-img-wrapper { height: 200px; }
+  .hotel-info { padding: 1rem !important; }
+}
 </style>

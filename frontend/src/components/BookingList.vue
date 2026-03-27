@@ -25,8 +25,14 @@
             </td>
 
             <td>
-              <div class="fw-semibold small">{{ formatDate(b.check_in) }}</div>
-              <div class="text-muted small">{{ formatDate(b.check_out) }}</div>
+              <div class="small">
+                <span class="text-muted">{{ t('date.check_in') }}:</span>
+                <span class="fw-semibold ms-1">{{ formatDate(b.check_in) }}</span>
+              </div>
+              <div class="small">
+                <span class="text-muted">{{ t('date.check_out') }}:</span>
+                <span class="fw-semibold ms-1">{{ formatDate(b.check_out) }}</span>
+              </div>
             </td>
 
             <td class="text-center">
@@ -34,7 +40,9 @@
             </td>
 
             <td class="text-center">
-              <span class="badge bg-success-light text-success">{{ b.status }}</span>
+              <span :class="getStatusClass(b.status)" class="badge">
+                {{ t('status.' + (b.status || 'confirmed')) }}
+              </span>
             </td>
 
             <td class="text-center">
@@ -56,6 +64,14 @@ import Swal from 'sweetalert2'
 export default {
   props: ['bookings'],
   methods: {
+    getStatusClass(status) {
+      const map = {
+        confirmed: 'bg-success-light text-success',
+        cancelled: 'bg-danger-light text-danger',
+        pending: 'bg-warning-light text-warning',
+      };
+      return map[status] || 'bg-success-light text-success';
+    },
     formatDate(dateStr) {
       if (!dateStr) return '-';
       return new Date(dateStr).toLocaleDateString(this.currentLocale === 'hu' ? 'hu-HU' : 'en-US', {
@@ -105,4 +121,6 @@ export default {
 .text-teal { color: #2a9d8f; }
 .bg-teal-light { background: #e8f8f5; }
 .bg-success-light { background: #e8f5e9; }
+.bg-danger-light { background: #fde8e8; }
+.bg-warning-light { background: #fff8e1; }
 </style>

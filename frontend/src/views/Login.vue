@@ -112,8 +112,10 @@ export default {
           localStorage.setItem('loginSuccess', 'true');
 
           const user = data.user || JSON.parse(localStorage.getItem('user') || '{}');
-          if (user.is_admin) {
+          if (user.role === 'admin' || user.role === 'super_admin') {
             window.location.href = '/admin';
+          } else if (user.role === 'hotel_admin') {
+            window.location.href = '/hotel-admin';
           } else {
             window.location.href = '/dashboard';
           }

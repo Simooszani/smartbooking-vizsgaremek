@@ -222,6 +222,78 @@ const api = {
         if (!response.ok) throw new Error('Sikertelen törlés');
         return await response.json();
     },
+
+    // Admin: Update user role
+    async updateUserRole(id, roleData) {
+        const response = await fetch(`${BASE_URL}/admin/users/${id}/role`, {
+            method: 'PUT',
+            headers: this.getHeaders(),
+            body: JSON.stringify(roleData)
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Sikertelen módosítás');
+        }
+        return await response.json();
+    },
+
+    // Hotel Admin: saját hotel foglalásai
+    async getHotelAdminBookings() {
+        const response = await fetch(`${BASE_URL}/hotel-admin/bookings`, {
+            method: 'GET',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Nem sikerült lekérni a foglalásokat');
+        return await response.json();
+    },
+
+    // Foglalás törlése indoklással
+    async deleteBookingWithReason(id, reason) {
+        const response = await fetch(`${BASE_URL}/bookings/${id}`, {
+            method: 'DELETE',
+            headers: this.getHeaders(),
+            body: JSON.stringify({ reason })
+        });
+        if (!response.ok) throw new Error('Sikertelen törlés');
+        return await response.json();
+    },
+
+    // Notifications
+    async getNotifications() {
+        const response = await fetch(`${BASE_URL}/notifications`, {
+            method: 'GET',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Nem sikerült lekérni az értesítéseket');
+        return await response.json();
+    },
+
+    async getUnreadCount() {
+        const response = await fetch(`${BASE_URL}/notifications/unread-count`, {
+            method: 'GET',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) return { count: 0 };
+        return await response.json();
+    },
+
+    async markNotificationRead(id) {
+        const response = await fetch(`${BASE_URL}/notifications/${id}/read`, {
+            method: 'PUT',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
+    async markAllNotificationsRead() {
+        const response = await fetch(`${BASE_URL}/notifications/read-all`, {
+            method: 'PUT',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
 };
 
 export default api;

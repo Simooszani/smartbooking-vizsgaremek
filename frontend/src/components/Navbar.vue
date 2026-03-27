@@ -22,9 +22,27 @@
             </router-link>
           </li>
 
+          <!-- Hotel Admin link -->
+          <li class="nav-item" v-if="isHotelAdmin">
+            <router-link class="nav-link px-3 hotel-admin-link" to="/hotel-admin">
+              <i class="bi bi-building me-1"></i>{{ t('hotel_admin.panel') }}
+            </router-link>
+          </li>
+
+          <!-- Admin link -->
           <li class="nav-item" v-if="isAdmin">
             <router-link class="nav-link px-3 admin-link" to="/admin">
               <i class="bi bi-shield-lock me-1"></i>{{ t('navbar.admin') }}
+            </router-link>
+          </li>
+
+          <!-- Notifications bell -->
+          <li class="nav-item ms-1" v-if="isLoggedIn">
+            <router-link class="nav-link px-2 position-relative" to="/notifications">
+              <i class="bi bi-bell fs-5"></i>
+              <span v-if="unreadCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                {{ unreadCount > 9 ? '9+' : unreadCount }}
+              </span>
             </router-link>
           </li>
 
@@ -70,7 +88,9 @@ export default {
   name: 'Navbar',
   data() {
     return {
-      scrolled: false
+      scrolled: false,
+      unreadCount: 0,
+      pollInterval: null
     }
   },
   computed: {
@@ -79,12 +99,17 @@ export default {
     },
     isAdmin() {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      return user.is_admin === 1 || user.is_admin === true;
+      return user.role === 'admin' || user.role === 'super_admin';
+    },
+    isHotelAdmin() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user.role === 'hotel_admin';
     }
   },
   methods: {
     async logout() {
       await API.logout();
+      this.unreadCount = 0;
       this.$router.push('/login');
       location.reload();
     },
@@ -94,13 +119,26 @@ export default {
     },
     handleScroll() {
       this.scrolled = window.scrollY > 50;
+    },
+    async fetchUnreadCount() {
+      if (!this.isLoggedIn) return;
+      try {
+        const data = await API.getUnreadCount();
+        this.unreadCount = data.count || 0;
+      } catch (e) {
+        // silent
+      }
     }
   },
   mounted() {
     window.addEventListener('scroll', this.handleScroll);
+    this.fetchUnreadCount();
+    // Poll every 30s for new notifications
+    this.pollInterval = setInterval(() => this.fetchUnreadCount(), 30000);
   },
   beforeDestroy() {
     window.removeEventListener('scroll', this.handleScroll);
+    if (this.pollInterval) clearInterval(this.pollInterval);
   }
 }
 </script>
@@ -139,6 +177,13 @@ export default {
 }
 .admin-link:hover {
   color: #f4a261 !important;
+}
+.hotel-admin-link {
+  color: #f4a261 !important;
+  font-weight: 600;
+}
+.hotel-admin-link:hover {
+  color: #e9c46a !important;
 }
 .lang-toggle {
   color: rgba(255,255,255,0.7) !important;

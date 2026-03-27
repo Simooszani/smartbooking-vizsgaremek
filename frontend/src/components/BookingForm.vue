@@ -78,31 +78,49 @@
             <!-- Expanded content: rooms + reviews -->
             <transition name="slide">
               <div v-if="expandedHotel === hotel.id" class="hotel-details">
-                <!-- Rooms -->
+                <!-- Rooms grouped by category -->
                 <div class="rooms-section p-4" v-if="hotel.rooms && hotel.rooms.length > 0">
                   <h5 class="fw-bold text-primary-dark mb-3">
                     <i class="bi bi-door-open me-2"></i>{{ t('hotel.rooms') }}
                   </h5>
-                  <div class="row g-3">
-                    <div class="col-md-6 col-lg-4" v-for="room in hotel.rooms" :key="room.id">
-                      <div class="room-card">
-                        <div class="room-type-badge">{{ room.type }}</div>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                          <div>
-                            <span class="text-muted small">
-                              <i class="bi bi-people-fill me-1"></i>{{ room.capacity }} {{ t('hotel.capacity') }}
-                            </span>
-                          </div>
-                          <div class="text-end">
-                            <div class="room-price">{{ Number(room.price_per_night).toLocaleString('hu-HU') }}</div>
-                            <div class="room-price-label">{{ t('hotel.per_night') }}</div>
-                          </div>
+                  <div v-for="cat in getRoomCategories(hotel)" :key="cat.type" class="room-category mb-3">
+                    <div class="room-category-header" @click.stop="toggleCategory(hotel.id, cat.type)">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                          <div class="room-type-badge me-3">{{ cat.type }}</div>
+                          <span class="text-muted small">
+                            <i class="bi bi-people-fill me-1"></i>{{ cat.capacity }} {{ t('hotel.capacity') }}
+                          </span>
+                          <span class="badge bg-light text-dark border ms-2">
+                            {{ cat.count }} {{ t('common.pieces') }}
+                          </span>
                         </div>
-                        <button @click.stop="bookRoom(hotel, room)" class="btn btn-coral btn-sm w-100 mt-3 rounded-pill">
-                          <i class="bi bi-calendar-plus me-1"></i>{{ t('hotel.select') }}
-                        </button>
+                        <div class="d-flex align-items-center">
+                          <div class="text-end me-3">
+                            <span class="room-price">{{ Number(cat.minPrice).toLocaleString('hu-HU') }}</span>
+                            <span class="room-price-label ms-1">{{ t('hotel.per_night') }}</span>
+                          </div>
+                          <i class="bi" :class="isCategoryOpen(hotel.id, cat.type) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                        </div>
                       </div>
                     </div>
+                    <transition name="slide">
+                      <div v-if="isCategoryOpen(hotel.id, cat.type)" class="room-category-rooms mt-2">
+                        <div class="row g-2">
+                          <div class="col-md-6 col-lg-4" v-for="room in cat.rooms" :key="room.id">
+                            <div class="room-card-mini">
+                              <div class="d-flex justify-content-between align-items-center">
+                                <span class="small text-muted">#{{ room.id }}</span>
+                                <span class="fw-bold text-primary-dark">{{ Number(room.price_per_night).toLocaleString('hu-HU') }} {{ t('hotel.per_night') }}</span>
+                              </div>
+                              <button @click.stop="bookRoom(hotel, room)" class="btn btn-coral btn-sm w-100 mt-2 rounded-pill">
+                                <i class="bi bi-calendar-plus me-1"></i>{{ t('hotel.select') }}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </transition>
                   </div>
                 </div>
 
@@ -162,7 +180,8 @@ export default {
       hotels: [],
       searched: false,
       searching: false,
-      expandedHotel: null
+      expandedHotel: null,
+      openCategories: {}
     }
   },
   methods: {
@@ -187,6 +206,38 @@ export default {
 
     toggleHotel(hotelId) {
       this.expandedHotel = this.expandedHotel === hotelId ? null : hotelId;
+    },
+
+    getRoomCategories(hotel) {
+      if (!hotel.rooms || hotel.rooms.length === 0) return [];
+      const groups = {};
+      hotel.rooms.forEach(room => {
+        if (!groups[room.type]) {
+          groups[room.type] = {
+            type: room.type,
+            capacity: room.capacity,
+            minPrice: Number(room.price_per_night),
+            count: 0,
+            rooms: []
+          };
+        }
+        groups[room.type].count++;
+        groups[room.type].rooms.push(room);
+        const price = Number(room.price_per_night);
+        if (price < groups[room.type].minPrice) {
+          groups[room.type].minPrice = price;
+        }
+      });
+      return Object.values(groups);
+    },
+
+    toggleCategory(hotelId, type) {
+      const key = hotelId + '_' + type;
+      this.$set(this.openCategories, key, !this.openCategories[key]);
+    },
+
+    isCategoryOpen(hotelId, type) {
+      return !!this.openCategories[hotelId + '_' + type];
     },
 
     getMinPrice(hotel) {
@@ -416,6 +467,25 @@ export default {
 }
 .room-price { font-size: 1.1rem; font-weight: 700; color: #264653; }
 .room-price-label { font-size: 0.7rem; color: #999; }
+
+/* Room category */
+.room-category-header {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  border: 1px solid #eee;
+  transition: all 0.2s;
+}
+.room-category-header:hover { border-color: #2a9d8f; background: #f0faf8; }
+.room-card-mini {
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.75rem;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s;
+}
+.room-card-mini:hover { border-color: #2a9d8f; }
 
 /* Review card */
 .review-card {

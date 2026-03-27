@@ -8,12 +8,14 @@ import AdminDashboard from '../views/AdminDashboard.vue'
 import AdminUserList from '../views/AdminUserList.vue'
 import AdminRoomList from '../views/AdminRoomList.vue'
 import AdminHotelList from '../views/AdminHotelList.vue'
+import HotelAdminDashboard from '../views/HotelAdminDashboard.vue'
+import NotificationsView from '../views/NotificationsView.vue'
 
 Vue.use(VueRouter)
 
 const adminGuard = (to, from, next) => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (user.is_admin) {
+  if (user.role === 'admin' || user.role === 'super_admin') {
     next();
   } else {
     Swal.fire({
@@ -22,7 +24,30 @@ const adminGuard = (to, from, next) => {
       text: 'Nincs admin jogosultságod!',
       confirmButtonColor: '#e76f51'
     });
-    next('/dashboard');
+    next('/');
+  }
+};
+
+const hotelAdminGuard = (to, from, next) => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (user.role === 'hotel_admin' || user.role === 'admin' || user.role === 'super_admin') {
+    next();
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: 'Access Denied',
+      text: 'Nincs jogosultságod!',
+      confirmButtonColor: '#e76f51'
+    });
+    next('/');
+  }
+};
+
+const authGuard = (to, from, next) => {
+  if (localStorage.getItem('access_token')) {
+    next();
+  } else {
+    next('/login');
   }
 };
 
@@ -30,6 +55,13 @@ const routes = [
   { path: '/', component: HomeView },
   { path: '/login', component: Login },
   { path: '/dashboard', component: Dashboard },
+  { path: '/notifications', component: NotificationsView, beforeEnter: authGuard },
+
+  {
+    path: '/hotel-admin',
+    component: HotelAdminDashboard,
+    beforeEnter: hotelAdminGuard
+  },
 
   {
     path: '/admin',

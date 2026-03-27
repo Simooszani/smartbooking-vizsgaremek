@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,7 @@ class BookingController extends Controller
         }
 
         $overlap = Booking::where('room_id', $request->room_id)
+            ->where('status', 'confirmed')
             ->where(function ($query) use ($request) {
                 $query->where('check_in', '<', $request->check_out)
                     ->where('check_out', '>', $request->check_in);
@@ -57,26 +59,67 @@ class BookingController extends Controller
         return response()->json($booking, 201);
     }
 
-    public function destroy($id) {
-        $booking = Booking::findOrFail($id);
-        
-        $user = \Illuminate\Support\Facades\Auth::user();
+    // Foglalás törlése (user: saját, admin: bármi, hotel_admin: saját hotel)
+    public function destroy(Request $request, $id)
+    {
+        $booking = Booking::with('room.hotel')->findOrFail($id);
+        $user = Auth::user();
 
         if (!$user) {
             return response()->json(['message' => 'Bejelentkezés szükséges!'], 401);
         }
 
-        $isAdmin = (bool) $user->is_admin; 
+        $isAdmin = in_array($user->role, ['admin', 'super_admin']);
+        $isHotelAdmin = $user->role === 'hotel_admin'
+            && $user->managed_hotel_id
+            && $booking->room
+            && $booking->room->hotel_id === $user->managed_hotel_id;
 
-        if (!$isAdmin && $booking->user_id !== $user->id) {
+        if (!$isAdmin && !$isHotelAdmin && $booking->user_id !== $user->id) {
             return response()->json(['message' => 'Nincs jogosultságod!'], 403);
+        }
+
+        // Ha admin vagy hotel admin törli, értesítés küldése indoklással
+        if (($isAdmin || $isHotelAdmin) && $booking->user_id !== $user->id) {
+            $reason = $request->input('reason', 'Nincs megadva indok.');
+            $hotelName = $booking->room && $booking->room->hotel
+                ? $booking->room->hotel->name
+                : 'Ismeretlen szálloda';
+
+            Notification::create([
+                'user_id' => $booking->user_id,
+                'hotel_id' => $booking->room ? $booking->room->hotel_id : null,
+                'booking_id' => $booking->id,
+                'type' => 'booking_cancelled',
+                'message' => "A foglalásod a(z) {$hotelName} szállodában törlésre került. Indok: {$reason}",
+            ]);
         }
 
         $booking->delete();
         return response()->json(['message' => 'Foglalás törölve']);
     }
 
-    public function allBookings() {
+    // Admin: összes foglalás
+    public function allBookings()
+    {
         return Booking::with(['user', 'room.hotel'])->get();
+    }
+
+    // Hotel Admin: saját hotel foglalásai
+    public function hotelBookings()
+    {
+        $user = Auth::user();
+
+        if (!$user->managed_hotel_id) {
+            return response()->json(['message' => 'Nincs hozzárendelt szálloda!'], 403);
+        }
+
+        $bookings = Booking::with(['user', 'room.hotel'])
+            ->whereHas('room', function ($q) use ($user) {
+                $q->where('hotel_id', $user->managed_hotel_id);
+            })
+            ->get();
+
+        return response()->json($bookings);
     }
 }

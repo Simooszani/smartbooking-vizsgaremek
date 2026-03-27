@@ -12,6 +12,7 @@
           <th>{{ t('admin.location_room') }}</th>
           <th class="text-center">{{ t('admin.period') }}</th>
           <th class="text-center">{{ t('admin.headcount') }}</th>
+          <th class="text-center">{{ t('dashboard.status') }}</th>
           <th class="text-center">{{ t('admin.actions') }}</th>
         </tr>
       </thead>
@@ -33,9 +34,14 @@
           </td>
 
           <td class="text-center">
-            <div class="small fw-semibold">{{ formatDate(b.check_in) }}</div>
-            <div class="small text-muted">{{ t('common.to') }}</div>
-            <div class="small fw-semibold">{{ formatDate(b.check_out) }}</div>
+            <div class="small">
+              <span class="text-muted">{{ t('date.check_in') }}:</span>
+              <span class="fw-semibold ms-1">{{ formatDate(b.check_in) }}</span>
+            </div>
+            <div class="small">
+              <span class="text-muted">{{ t('date.check_out') }}:</span>
+              <span class="fw-semibold ms-1">{{ formatDate(b.check_out) }}</span>
+            </div>
           </td>
 
           <td class="text-center">
@@ -45,9 +51,24 @@
           </td>
 
           <td class="text-center">
-            <button @click="deleteBooking(b.id)" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-              <i class="bi bi-trash3"></i>
-            </button>
+            <span :class="getStatusClass(b.status)" class="badge">
+              {{ t('status.' + (b.status || 'confirmed')) }}
+            </span>
+          </td>
+
+          <td class="text-center">
+            <div class="d-flex justify-content-center gap-1">
+              <button
+                v-if="b.status !== 'cancelled'"
+                @click="cancelWithReason(b)"
+                class="btn btn-outline-warning btn-sm rounded-pill px-2"
+                :title="t('hotel_admin.cancel_booking')">
+                <i class="bi bi-chat-text me-1"></i>{{ t('admin.cancel_with_reason') }}
+              </button>
+              <button @click="deleteBooking(b.id)" class="btn btn-outline-danger btn-sm rounded-pill px-2">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -70,6 +91,62 @@ export default {
       return new Date(dateStr).toLocaleDateString(this.currentLocale === 'hu' ? 'hu-HU' : 'en-US', {
         year: 'numeric', month: 'short', day: '2-digit'
       });
+    },
+
+    getStatusClass(status) {
+      const map = {
+        confirmed: 'bg-success-light text-success',
+        cancelled: 'bg-danger-light text-danger',
+        pending: 'bg-warning-light text-warning',
+      };
+      return map[status] || 'bg-success-light text-success';
+    },
+
+    async cancelWithReason(booking) {
+      const { value: reason } = await Swal.fire({
+        title: this.t('admin.cancel_booking_title'),
+        html:
+          `<div class="text-start">
+            <p class="text-muted small mb-2">${booking.user ? booking.user.name : ''} — ${booking.room ? booking.room.type : ''}</p>
+            <label class="form-label fw-semibold small">${this.t('admin.cancel_reason_label')}</label>
+            <textarea id="swal-reason" class="form-control" rows="3" placeholder="${this.t('admin.cancel_reason_placeholder')}"></textarea>
+          </div>`,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: this.t('admin.cancel_with_reason'),
+        cancelButtonText: this.t('admin.cancel'),
+        confirmButtonColor: '#e76f51',
+        cancelButtonColor: '#6c757d',
+        preConfirm: () => {
+          const reason = document.getElementById('swal-reason').value;
+          if (!reason.trim()) {
+            Swal.showValidationMessage(this.t('admin.cancel_reason_placeholder'));
+            return false;
+          }
+          return reason;
+        }
+      });
+
+      if (reason) {
+        try {
+          await API.deleteBookingWithReason(booking.id, reason);
+          Swal.fire({
+            icon: 'success',
+            title: this.t('admin.success'),
+            text: this.t('admin.booking_cancelled_with_reason'),
+            timer: 2000,
+            showConfirmButton: false
+          });
+          this.$emit('refresh');
+        } catch (e) {
+          Swal.fire({
+            icon: 'error',
+            title: this.t('admin.error'),
+            text: e.message || this.t('admin.delete_error'),
+            confirmButtonColor: '#e76f51'
+          });
+        }
+      }
     },
 
     async deleteBooking(id) {
@@ -125,4 +202,7 @@ export default {
 }
 .text-teal { color: #2a9d8f; }
 .bg-teal-light { background: #e8f8f5; }
+.bg-success-light { background: #e8f5e9; }
+.bg-danger-light { background: #fde8e8; }
+.bg-warning-light { background: #fff8e1; }
 </style>

@@ -19,14 +19,21 @@ class DatabaseSeeder extends Seeder
             'name' => 'Teszt Felhasználó',
             'email' => 'teszt@teszt.hu',
             'password' => Hash::make('password123'),
-            'is_admin' => false,
+            'role' => 'user',
+        ]);
+
+        User::create([
+            'name' => 'Főadmin',
+            'email' => 'admin@smartbooking.hu',
+            'password' => Hash::make('admin123'),
+            'role' => 'super_admin',
         ]);
 
         User::create([
             'name' => 'Admin Felhasználó',
-            'email' => 'admin@smartbooking.hu',
+            'email' => 'admin2@smartbooking.hu',
             'password' => Hash::make('admin123'),
-            'is_admin' => true,
+            'role' => 'admin',
         ]);
 
         Hotel::factory(500)->create()->each(function ($hotel) {
@@ -43,5 +50,17 @@ class DatabaseSeeder extends Seeder
             $avgRating = Review::where('hotel_id', $hotel->id)->avg('rating');
             $hotel->update(['rating' => round($avgRating, 1)]);
         });
+
+        // Első hotel admin hozzárendelése demóhoz
+        $firstHotel = Hotel::first();
+        if ($firstHotel) {
+            User::create([
+                'name' => 'Hotel Manager',
+                'email' => 'manager@smartbooking.hu',
+                'password' => Hash::make('manager123'),
+                'role' => 'hotel_admin',
+                'managed_hotel_id' => $firstHotel->id,
+            ]);
+        }
     }
 }

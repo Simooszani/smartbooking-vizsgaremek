@@ -21,7 +21,7 @@ class AuthController extends Controller
             'name' => $fields['name'],
             'email' => $fields['email'],
             'password' => Hash::make($fields['password']),
-            'is_admin' => false
+            'role' => 'user'
         ]);
 
         $token = $user->createToken('myapptoken')->plainTextToken;
@@ -61,18 +61,25 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $user->tokens()->delete();
-        
+
         return response()->json(['message' => 'Kijelentkezve']);
     }
 
     public function me()
     {
-        return response()->json(Auth::user());
+        $user = Auth::user();
+        $data = $user->toArray();
+
+        if ($user->isHotelAdmin() && $user->managed_hotel_id) {
+            $data['managed_hotel'] = $user->managedHotel;
+        }
+
+        return response()->json($data);
     }
 
     public function getAllUsers()
     {
-        return response()->json(User::all());
+        return response()->json(User::with('managedHotel')->get());
     }
 
     public function deleteUser($id)
@@ -89,5 +96,37 @@ class AuthController extends Controller
 
         $user->delete();
         return response()->json(['message' => 'Felhasználó sikeresen törölve']);
+    }
+
+    public function updateUserRole(Request $request, $id)
+    {
+        $request->validate([
+            'role' => 'required|in:user,hotel_admin,admin,super_admin',
+            'managed_hotel_id' => 'nullable|exists:hotels,id',
+        ]);
+
+        $currentUser = Auth::user();
+        $targetUser = User::findOrFail($id);
+        $newRole = $request->role;
+
+        // Csak super_admin adhat admin vagy super_admin jogot
+        if (in_array($newRole, ['admin', 'super_admin']) && !$currentUser->isSuperAdmin()) {
+            return response()->json([
+                'message' => 'Csak a főadmin adhat admin jogosultságot!'
+            ], 403);
+        }
+
+        // Admin csak hotel_admin-t és user-t adhat
+        if ($currentUser->role === 'admin' && !in_array($newRole, ['user', 'hotel_admin'])) {
+            return response()->json([
+                'message' => 'Nincs jogosultságod ehhez a szerepkörhöz!'
+            ], 403);
+        }
+
+        $targetUser->role = $newRole;
+        $targetUser->managed_hotel_id = ($newRole === 'hotel_admin') ? $request->managed_hotel_id : null;
+        $targetUser->save();
+
+        return response()->json($targetUser->load('managedHotel'));
     }
 }

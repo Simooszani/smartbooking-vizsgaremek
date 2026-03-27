@@ -6,25 +6,40 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $password;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    private static array $firstNamesMale = [
+        'László', 'István', 'József', 'János', 'Zoltán', 'Sándor', 'Gábor', 'Ferenc',
+        'Attila', 'Péter', 'Tamás', 'Zsolt', 'Tibor', 'András', 'Csaba', 'Imre',
+        'Lajos', 'György', 'Balázs', 'Gyula', 'Mihály', 'Róbert', 'Béla', 'Dávid',
+        'Dániel', 'Ádám', 'Krisztián', 'Miklós', 'Norbert', 'Bence', 'Máté', 'Levente',
+    ];
+
+    private static array $firstNamesFemale = [
+        'Mária', 'Erzsébet', 'Katalin', 'Ilona', 'Éva', 'Anna', 'Zsuzsanna', 'Margit',
+        'Judit', 'Ágnes', 'Andrea', 'Erika', 'Krisztina', 'Julianna', 'Irén', 'Eszter',
+        'Mónika', 'Edit', 'Gabriella', 'Szilvia', 'Nikolett', 'Viktória', 'Petra', 'Vivien',
+        'Boglárka', 'Réka', 'Nóra', 'Fruzsina', 'Lilla', 'Dóra', 'Fanni', 'Zsófia',
+    ];
+
+    private static array $lastNames = [
+        'Nagy', 'Kovács', 'Tóth', 'Szabó', 'Horváth', 'Varga', 'Kiss', 'Molnár',
+        'Németh', 'Farkas', 'Balogh', 'Papp', 'Takács', 'Juhász', 'Lakatos', 'Mészáros',
+        'Oláh', 'Simon', 'Rácz', 'Fehér', 'Szilágyi', 'Török', 'Vincze', 'Balázs',
+        'Hegedűs', 'Szűcs', 'Pintér', 'Fodor', 'Antal', 'Orosz',
+    ];
+
     public function definition(): array
     {
+        $isMale = $this->faker->boolean();
+        $firstName = $this->faker->randomElement($isMale ? self::$firstNamesMale : self::$firstNamesFemale);
+        $lastName = $this->faker->randomElement(self::$lastNames);
+        $name = $lastName . ' ' . $firstName;
+
         return [
-            'name' => fake()->name(),
+            'name' => $name,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -32,9 +47,6 @@ class UserFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [

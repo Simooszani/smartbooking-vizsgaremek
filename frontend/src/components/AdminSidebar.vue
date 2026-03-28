@@ -25,6 +25,14 @@
         <i class="bi bi-door-open me-3"></i> {{ t('admin.rooms') }}
       </router-link>
 
+      <router-link to="/admin/reports" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link">
+        <i class="bi bi-flag me-3"></i> {{ t('reports.title') }}
+      </router-link>
+
+      <router-link to="/admin/warnings" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link">
+        <i class="bi bi-exclamation-triangle me-3"></i> {{ t('warnings.title') }}
+      </router-link>
+
       <hr class="mx-3 border-secondary">
 
       <router-link to="/" class="nav-link text-muted py-3 px-4 d-flex align-items-center">

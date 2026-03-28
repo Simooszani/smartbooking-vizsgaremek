@@ -47,6 +47,14 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Check suspension
+        if ($user->isSuspended()) {
+            return response()->json([
+                'message' => 'A fiókod fel van függesztve!',
+                'suspended_until' => $user->suspended_until->toISOString(),
+            ], 403);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([

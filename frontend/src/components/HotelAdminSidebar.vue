@@ -13,6 +13,10 @@
         <i class="bi bi-calendar-check me-3"></i> {{ t('hotel_admin.my_bookings') }}
       </router-link>
 
+      <router-link to="/chat" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link">
+        <i class="bi bi-chat-dots me-3"></i> {{ t('chat.title') }}
+      </router-link>
+
       <hr class="mx-3 border-secondary">
 
       <router-link to="/" class="nav-link text-muted py-3 px-4 d-flex align-items-center">

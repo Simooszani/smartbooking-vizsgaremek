@@ -294,6 +294,105 @@ const api = {
         if (!response.ok) throw new Error('Hiba');
         return await response.json();
     },
+
+    // Chat Messages
+    async getConversations() {
+        const response = await fetch(`${BASE_URL}/messages/conversations`, {
+            method: 'GET',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
+    async getMessages(hotelId, userId) {
+        const response = await fetch(`${BASE_URL}/messages/${hotelId}/${userId}`, {
+            method: 'GET',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
+    async sendMessage(data) {
+        const response = await fetch(`${BASE_URL}/messages`, {
+            method: 'POST',
+            headers: this.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
+    async getMessageUnreadCount() {
+        const response = await fetch(`${BASE_URL}/messages/unread-count`, {
+            method: 'GET',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) return { count: 0 };
+        return await response.json();
+    },
+
+    // Reports
+    async createReport(data) {
+        const response = await fetch(`${BASE_URL}/hotel-admin/reports`, {
+            method: 'POST',
+            headers: this.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        const res = await response.json();
+        if (!response.ok) throw res;
+        return res;
+    },
+
+    async getReports() {
+        const response = await fetch(`${BASE_URL}/admin/reports`, {
+            method: 'GET',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
+    async updateReportStatus(id, status) {
+        const response = await fetch(`${BASE_URL}/admin/reports/${id}/status`, {
+            method: 'PUT',
+            headers: this.getHeaders(),
+            body: JSON.stringify({ status })
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
+    // Warnings
+    async getWarnings() {
+        const response = await fetch(`${BASE_URL}/admin/warnings`, {
+            method: 'GET',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
+    async getUserWarnings(userId) {
+        const response = await fetch(`${BASE_URL}/admin/warnings/${userId}`, {
+            method: 'GET',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
+    async issueWarning(data) {
+        const response = await fetch(`${BASE_URL}/admin/warnings`, {
+            method: 'POST',
+            headers: this.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        const res = await response.json();
+        if (!response.ok) throw res;
+        return res;
+    },
 };
 
 export default api;

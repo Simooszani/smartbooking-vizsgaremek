@@ -17,6 +17,7 @@ class User extends Authenticatable
         'password',
         'role',
         'managed_hotel_id',
+        'suspended_until',
     ];
 
     protected $hidden = [
@@ -31,6 +32,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'suspended_until' => 'datetime',
         ];
     }
 
@@ -57,5 +59,15 @@ class User extends Authenticatable
     public function managedHotel()
     {
         return $this->belongsTo(Hotel::class, 'managed_hotel_id');
+    }
+
+    public function warnings()
+    {
+        return $this->hasMany(Warning::class);
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->suspended_until && $this->suspended_until->isFuture();
     }
 }

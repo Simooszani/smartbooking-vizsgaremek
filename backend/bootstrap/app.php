@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'hotel_admin' => \App\Http\Middleware\HotelAdminMiddleware::class,
+            'check_suspension' => \App\Http\Middleware\CheckSuspension::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

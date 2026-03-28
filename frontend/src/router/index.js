@@ -10,6 +10,9 @@ import AdminRoomList from '../views/AdminRoomList.vue'
 import AdminHotelList from '../views/AdminHotelList.vue'
 import HotelAdminDashboard from '../views/HotelAdminDashboard.vue'
 import NotificationsView from '../views/NotificationsView.vue'
+import ChatView from '../views/ChatView.vue'
+import AdminReports from '../views/AdminReports.vue'
+import AdminWarnings from '../views/AdminWarnings.vue'
 
 Vue.use(VueRouter)
 
@@ -56,6 +59,7 @@ const routes = [
   { path: '/login', component: Login },
   { path: '/dashboard', component: Dashboard },
   { path: '/notifications', component: NotificationsView, beforeEnter: authGuard },
+  { path: '/chat', component: ChatView, beforeEnter: authGuard },
 
   {
     path: '/hotel-admin',
@@ -81,6 +85,16 @@ const routes = [
   {
     path: '/admin/hotels',
     component: AdminHotelList,
+    beforeEnter: adminGuard
+  },
+  {
+    path: '/admin/reports',
+    component: AdminReports,
+    beforeEnter: adminGuard
+  },
+  {
+    path: '/admin/warnings',
+    component: AdminWarnings,
     beforeEnter: adminGuard
   }
 ]

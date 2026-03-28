@@ -36,6 +36,16 @@
             </router-link>
           </li>
 
+          <!-- Chat icon -->
+          <li class="nav-item ms-1" v-if="isLoggedIn">
+            <router-link class="nav-link px-2 position-relative" to="/chat">
+              <i class="bi bi-chat-dots fs-5"></i>
+              <span v-if="msgUnreadCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-teal" style="font-size: 0.6rem;">
+                {{ msgUnreadCount > 9 ? '9+' : msgUnreadCount }}
+              </span>
+            </router-link>
+          </li>
+
           <!-- Notifications bell -->
           <li class="nav-item ms-1" v-if="isLoggedIn">
             <router-link class="nav-link px-2 position-relative" to="/notifications">
@@ -90,6 +100,7 @@ export default {
     return {
       scrolled: false,
       unreadCount: 0,
+      msgUnreadCount: 0,
       pollInterval: null
     }
   },
@@ -125,6 +136,8 @@ export default {
       try {
         const data = await API.getUnreadCount();
         this.unreadCount = data.count || 0;
+        const msgData = await API.getMessageUnreadCount();
+        this.msgUnreadCount = msgData.count || 0;
       } catch (e) {
         // silent
       }
@@ -214,4 +227,5 @@ export default {
 .dropdown-item.active {
   background-color: #2a9d8f;
 }
+.bg-teal { background: #2a9d8f; }
 </style>

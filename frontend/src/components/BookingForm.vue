@@ -70,6 +70,9 @@
                       <i class="bi" :class="expandedHotel === hotel.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                       {{ expandedHotel === hotel.id ? t('hotel.hide_rooms') : t('hotel.show_rooms') }}
                     </button>
+                    <button @click.stop="openChat(hotel.id)" class="btn btn-sm btn-outline-secondary mt-1 rounded-pill px-3" v-if="isLoggedIn">
+                      <i class="bi bi-chat-dots me-1"></i>{{ t('chat.contact_hotel') }}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -182,6 +185,11 @@ export default {
       searching: false,
       expandedHotel: null,
       openCategories: {}
+    }
+  },
+  computed: {
+    isLoggedIn() {
+      return !!localStorage.getItem('access_token');
     }
   },
   methods: {
@@ -307,6 +315,10 @@ export default {
           });
         }
       }
+    },
+
+    openChat(hotelId) {
+      this.$router.push('/chat?hotel=' + hotelId);
     },
 
     async openReviewModal(hotel) {

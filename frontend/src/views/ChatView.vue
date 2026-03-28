@@ -221,16 +221,21 @@ export default {
     // Open a new chat from hotel page (called via query params)
     async initFromQuery() {
       const hotelId = this.$route.query.hotel;
+      const userId = this.$route.query.user;
       if (hotelId) {
-        const conv = { hotel_id: parseInt(hotelId), user_id: this.currentUserId, hotel: { name: '' } };
-        // Try to find existing conversation or create new
+        const targetUserId = userId ? parseInt(userId) : this.currentUserId;
         await this.fetchConversations();
-        const existing = this.conversations.find(c => c.hotel_id == hotelId);
+        const existing = this.conversations.find(c => c.hotel_id == hotelId && c.user_id == targetUserId);
         if (existing) {
           this.openConversation(existing);
         } else {
+          const conv = { hotel_id: parseInt(hotelId), user_id: targetUserId, hotel: { name: '' } };
           this.activeConv = conv;
-          this.messages = [];
+          try {
+            this.messages = await api.getMessages(hotelId, targetUserId);
+          } catch (e) {
+            this.messages = [];
+          }
         }
       }
     }

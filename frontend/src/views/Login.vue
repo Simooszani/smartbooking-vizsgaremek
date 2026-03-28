@@ -132,10 +132,20 @@ export default {
           this.isLogin = true;
         }
       } catch (e) {
+        let errorText = e.message || this.t('login.error_text');
+        // Show suspension info
+        if (e.suspended_until) {
+          const date = new Date(e.suspended_until).toLocaleDateString(this.currentLocale === 'hu' ? 'hu-HU' : 'en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+          });
+          errorText = (this.currentLocale === 'hu'
+            ? `A fiókod fel van függesztve ${date}-ig!`
+            : `Your account is suspended until ${date}!`);
+        }
         Swal.fire({
           icon: 'error',
           title: this.t('login.error'),
-          text: e.message || this.t('login.error_text'),
+          text: errorText,
           confirmButtonColor: '#e76f51'
         });
       } finally {

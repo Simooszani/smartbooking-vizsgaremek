@@ -38,9 +38,9 @@ Route::middleware(['auth:sanctum', 'check_suspension'])->group(function () {
 
     // Chat üzenetek
     Route::get('/messages/conversations', [MessageController::class, 'conversations']);
-    Route::get('/messages/{hotelId}/{userId}', [MessageController::class, 'messages']);
-    Route::post('/messages', [MessageController::class, 'send']);
     Route::get('/messages/unread-count', [MessageController::class, 'unreadCount']);
+    Route::post('/messages', [MessageController::class, 'send']);
+    Route::get('/messages/{hotelId}/{userId}', [MessageController::class, 'messages']);
 
     // Hotel Admin végpontok
     Route::middleware([HotelAdminMiddleware::class])->group(function () {

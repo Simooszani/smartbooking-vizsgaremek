@@ -32,7 +32,11 @@ const api = {
             body: JSON.stringify(credentials)
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Hibás belépési adatok');
+        if (!response.ok) {
+            const err = new Error(data.message || 'Hibás belépési adatok');
+            if (data.suspended_until) err.suspended_until = data.suspended_until;
+            throw err;
+        }
         if (data.access_token) {
             localStorage.setItem('access_token', data.access_token);
             if (data.user) {

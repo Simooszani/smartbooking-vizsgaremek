@@ -166,7 +166,7 @@ export default {
       ).join('');
 
       const hotelOptions = this.hotels.map(h =>
-        `<option value="${h.id}" ${user.managed_hotel_id === h.id ? 'selected' : ''}>${h.name}</option>`
+        `<option value="${h.name} — ${h.address}">${h.name} — ${h.address}</option>`
       ).join('');
 
       const { value: formValues } = await Swal.fire({
@@ -181,7 +181,7 @@ export default {
             </select>
             <div id="hotel-select-group" style="display: ${user.role === 'hotel_admin' ? 'block' : 'none'}">
               <label class="form-label fw-semibold small">${this.t('admin.hotel_name')}</label>
-              <input id="swal-hotel-search" class="form-control" list="role-hotel-list" placeholder="${this.t('admin.search_hotel')}" value="${user.managed_hotel ? user.managed_hotel.name : ''}">
+              <input id="swal-hotel-search" class="form-control" list="role-hotel-list" placeholder="${this.t('admin.search_hotel')}" value="${user.managed_hotel ? user.managed_hotel.name + ' — ' + (user.managed_hotel.address || '') : ''}">
               <datalist id="role-hotel-list">${hotelOptions}</datalist>
             </div>
           </div>`,
@@ -195,8 +195,8 @@ export default {
           let managed_hotel_id = null;
 
           if (role === 'hotel_admin') {
-            const hotelName = document.getElementById('swal-hotel-search').value;
-            const hotel = this.hotels.find(h => h.name === hotelName);
+            const searchVal = document.getElementById('swal-hotel-search').value;
+            const hotel = this.hotels.find(h => searchVal.includes(h.name));
             if (!hotel) {
               Swal.showValidationMessage(this.t('admin.select_hotel'));
               return false;

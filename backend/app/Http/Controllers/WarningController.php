@@ -92,10 +92,14 @@ class WarningController extends Controller
         ]);
     }
 
-    // Admin: list all warned users overview
+    // Admin: list all warned users overview (excluding auto-expired warnings)
     public function index()
     {
+        // Auto-expire: only count warnings from last 3 months
+        $threeMonthsAgo = Carbon::now()->subMonths(3);
+
         $warnedUsers = Warning::select('user_id')
+            ->where('created_at', '>=', $threeMonthsAgo)
             ->selectRaw('COUNT(*) as warning_count')
             ->selectRaw('MAX(created_at) as last_warning_at')
             ->groupBy('user_id')
@@ -104,5 +108,29 @@ class WarningController extends Controller
             ->get();
 
         return response()->json($warnedUsers);
+    }
+
+    // Admin: delete a specific warning
+    public function destroy($id)
+    {
+        $warning = Warning::findOrFail($id);
+        $userId = $warning->user_id;
+        $warning->delete();
+
+        // Recalculate suspension based on remaining active warnings (last 3 months)
+        $threeMonthsAgo = Carbon::now()->subMonths(3);
+        $activeCount = Warning::where('user_id', $userId)
+            ->where('created_at', '>=', $threeMonthsAgo)
+            ->count();
+
+        $user = User::findOrFail($userId);
+        if ($activeCount < 3) {
+            $user->update(['suspended_until' => null]);
+        }
+
+        return response()->json([
+            'message' => 'Figyelmeztetés törölve.',
+            'remaining_count' => $activeCount,
+        ]);
     }
 }

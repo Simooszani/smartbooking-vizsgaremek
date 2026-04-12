@@ -72,5 +72,6 @@ Route::middleware(['auth:sanctum', 'check_suspension'])->group(function () {
         Route::get('/admin/warnings', [WarningController::class, 'index']);
         Route::get('/admin/warnings/{userId}', [WarningController::class, 'userWarnings']);
         Route::post('/admin/warnings', [WarningController::class, 'store']);
+        Route::delete('/admin/warnings/{id}', [WarningController::class, 'destroy']);
     });
 });

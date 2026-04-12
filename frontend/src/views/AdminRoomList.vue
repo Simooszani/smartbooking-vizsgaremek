@@ -24,15 +24,14 @@
         </div>
       </div>
 
-      <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-0 text-center" v-if="loading">
-          <div class="p-5">
-            <div class="spinner-border text-teal" role="status"></div>
-            <p class="mt-2 text-muted">{{ t('admin.loading_rooms') }}</p>
-          </div>
-        </div>
+      <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-teal" role="status"></div>
+        <p class="mt-2 text-muted">{{ t('admin.loading_rooms') }}</p>
+      </div>
 
-        <div class="card-body p-0 table-responsive" v-else>
+      <!-- Desktop table -->
+      <div v-else class="card shadow-sm border-0 rounded-3 d-none d-md-block">
+        <div class="card-body p-0 table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -71,6 +70,39 @@
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- Mobile card layout -->
+      <div v-if="!loading" class="d-md-none">
+        <div v-for="room in filteredRooms" :key="'m'+room.id" class="card shadow-sm border-0 rounded-3 mb-3">
+          <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="fw-bold text-teal">#{{ room.id }}</span>
+                <span :class="getRoomClass(room.type)" class="badge px-2 py-1 ms-2">{{ room.type }}</span>
+              </div>
+              <span class="fw-bold">{{ Number(room.price_per_night).toLocaleString('hu-HU') }} Ft</span>
+            </div>
+            <div class="small mb-1">
+              <span class="fw-bold text-dark">{{ room.hotel ? room.hotel.name : t('admin.unknown_hotel') }}</span>
+            </div>
+            <div class="text-muted small mb-2" v-if="room.hotel">
+              <i class="bi bi-geo-alt me-1"></i>{{ room.hotel.address }}
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small"><i class="bi bi-people-fill me-1 text-muted"></i>{{ room.capacity }} {{ t('admin.person') }}</span>
+              <div class="d-flex gap-2">
+                <button @click="openEditModal(room)" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button @click="handleDelete(room.id)" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-if="filteredRooms.length === 0" class="text-center py-4 text-muted">{{ t('admin.no_search_result') }}</div>
       </div>
     </div>
   </div>

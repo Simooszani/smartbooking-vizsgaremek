@@ -12,11 +12,13 @@
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.check_in') }}</label>
-        <input v-model="search.check_in" type="date" class="form-control" :min="today">
+        <input v-model="search.check_in" type="date" class="form-control" :min="today"
+          :placeholder="t('search.check_in')" :title="t('search.check_in')">
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.check_out') }}</label>
-        <input v-model="search.check_out" type="date" class="form-control" :min="search.check_in || today">
+        <input v-model="search.check_out" type="date" class="form-control" :min="search.check_in || today"
+          :placeholder="t('search.check_out')" :title="t('search.check_out')">
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.guests') }}</label>
@@ -528,6 +530,17 @@ export default {
   border-color: #dee2e6;
 }
 
+/* Fix date input mobile placeholder */
+input[type="date"]:invalid::-webkit-datetime-edit {
+  color: transparent;
+}
+input[type="date"]:focus::-webkit-datetime-edit {
+  color: initial;
+}
+input[type="date"] {
+  min-height: 38px;
+}
+
 @media (max-width: 767.98px) {
   .hotel-img-wrapper { height: 200px; }
   .hotel-info { padding: 1rem !important; }
@@ -541,5 +554,6 @@ export default {
   .room-category-header { padding: 0.7rem 0.75rem; }
   .room-price { font-size: 0.95rem; }
   .room-type-badge { font-size: 0.7rem; padding: 2px 8px; }
+  .form-label { font-size: 0.7rem; margin-bottom: 0.15rem; }
 }
 </style>

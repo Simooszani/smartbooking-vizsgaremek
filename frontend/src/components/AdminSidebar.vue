@@ -100,16 +100,16 @@ export default {
 
 .mobile-burger {
   position: fixed;
-  top: 12px;
+  top: 70px;
   left: 12px;
-  z-index: 1100;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  z-index: 1055;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   border: none;
   background: #1a1a2e;
   color: #e9c46a;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   display: flex;
   align-items: center;

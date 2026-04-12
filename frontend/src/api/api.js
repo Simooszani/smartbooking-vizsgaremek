@@ -415,6 +415,15 @@ const api = {
         if (!response.ok) throw res;
         return res;
     },
+
+    async deleteWarning(id) {
+        const response = await fetch(`${BASE_URL}/admin/warnings/${id}`, {
+            method: 'DELETE',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
 };
 
 export default api;

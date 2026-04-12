@@ -16,8 +16,14 @@ class MessageController extends Controller
 
         $query = Message::query();
 
-        if ($user->isAdmin()) {
-            // super_admin and admin see ALL conversations across all hotels
+        if ($user->isSuperAdmin()) {
+            // super_admin sees ALL conversations
+        } elseif ($user->isAdmin() && $user->admin_city) {
+            // Területi admin: csak az adott városban lévő hotelek chatjeit látja
+            $cityHotelIds = Hotel::where('address', 'like', '%' . $user->admin_city . '%')->pluck('id');
+            $query->whereIn('hotel_id', $cityHotelIds);
+        } elseif ($user->isAdmin()) {
+            // Admin város nélkül: mindent lát
         } elseif ($user->isHotelAdmin() && $user->managed_hotel_id) {
             $query->where('hotel_id', $user->managed_hotel_id);
         } else {

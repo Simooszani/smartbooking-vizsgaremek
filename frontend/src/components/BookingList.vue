@@ -1,6 +1,7 @@
 <template>
   <div>
-    <div class="table-responsive">
+    <!-- Desktop table -->
+    <div class="d-none d-md-block table-responsive">
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
@@ -17,13 +18,10 @@
               <div v-if="b.room">
                 <strong class="d-block text-primary-dark">{{ b.room.hotel ? b.room.hotel.name : '' }}</strong>
                 <span class="badge bg-teal-light text-teal me-1">{{ b.room.type }}</span>
-                <small class="text-muted">
-                  ({{ b.room.capacity }} {{ t('dashboard.person') }})
-                </small>
+                <small class="text-muted">({{ b.room.capacity }} {{ t('dashboard.person') }})</small>
               </div>
               <span v-else class="text-danger small">{{ t('dashboard.no_room') }}</span>
             </td>
-
             <td>
               <div class="small">
                 <span class="text-muted">{{ t('date.check_in') }}:</span>
@@ -34,17 +32,12 @@
                 <span class="fw-semibold ms-1">{{ formatDate(b.check_out) }}</span>
               </div>
             </td>
-
             <td class="text-center">
               <span class="badge bg-light text-dark border">{{ b.guests }} {{ t('dashboard.person') }}</span>
             </td>
-
             <td class="text-center">
-              <span :class="getStatusClass(b.status)" class="badge">
-                {{ t('status.' + (b.status || 'confirmed')) }}
-              </span>
+              <span :class="getStatusClass(b.status)" class="badge">{{ t('status.' + (b.status || 'confirmed')) }}</span>
             </td>
-
             <td class="text-center">
               <button @click="deleteBooking(b.id)" class="btn btn-sm btn-outline-danger rounded-pill px-3">
                 <i class="bi bi-x-circle me-1"></i>{{ t('dashboard.delete') }}
@@ -53,6 +46,37 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Mobile card layout -->
+    <div class="d-md-none p-3">
+      <div v-for="b in bookings" :key="'m'+b.id" class="booking-card-mobile mb-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <strong class="text-primary-dark" v-if="b.room && b.room.hotel">{{ b.room.hotel.name }}</strong>
+            <span v-if="b.room" class="badge bg-teal-light text-teal ms-2 small">{{ b.room.type }}</span>
+          </div>
+          <span :class="getStatusClass(b.status)" class="badge">{{ t('status.' + (b.status || 'confirmed')) }}</span>
+        </div>
+        <div class="row g-2 mb-2 small">
+          <div class="col-6">
+            <span class="text-muted d-block">{{ t('date.check_in') }}</span>
+            <span class="fw-semibold">{{ formatDate(b.check_in) }}</span>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">{{ t('date.check_out') }}</span>
+            <span class="fw-semibold">{{ formatDate(b.check_out) }}</span>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="badge bg-light text-dark border">
+            <i class="bi bi-people me-1"></i>{{ b.guests }} {{ t('dashboard.person') }}
+          </span>
+          <button @click="deleteBooking(b.id)" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+            <i class="bi bi-x-circle me-1"></i>{{ t('dashboard.delete') }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -123,4 +147,11 @@ export default {
 .bg-success-light { background: #e8f5e9; }
 .bg-danger-light { background: #fde8e8; }
 .bg-warning-light { background: #fff8e1; }
+.booking-card-mobile {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid #eee;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
 </style>

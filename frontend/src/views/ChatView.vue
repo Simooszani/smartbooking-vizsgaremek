@@ -8,13 +8,22 @@
       <!-- Conversations list -->
       <div class="conversations-panel">
         <div class="p-3 border-bottom">
-          <h6 class="fw-bold mb-2">{{ t('chat.conversations') }}</h6>
-          <div v-if="isSuperAdmin" class="position-relative">
+          <h6 class="fw-bold mb-2 d-none d-md-block">{{ t('chat.conversations') }}</h6>
+          <div class="position-relative">
             <i class="bi bi-search position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%); color: #888; font-size: 0.8rem;"></i>
             <input
               v-model="searchQuery"
               type="text"
-              class="form-control form-control-sm rounded-pill ps-4"
+              class="form-control form-control-sm rounded-pill ps-4 d-none d-md-block"
+              :placeholder="t('chat.search_placeholder')">
+            <button class="btn btn-sm btn-outline-secondary rounded-pill d-md-none w-100" @click="mobileSearchOpen = !mobileSearchOpen">
+              <i class="bi bi-search"></i>
+            </button>
+            <input
+              v-if="mobileSearchOpen"
+              v-model="searchQuery"
+              type="text"
+              class="form-control form-control-sm rounded-pill ps-4 mt-2 d-md-none"
               :placeholder="t('chat.search_placeholder')">
           </div>
         </div>
@@ -141,6 +150,8 @@ export default {
       isHotelAdmin: false,
       isSuperAdmin: false,
       searchQuery: '',
+      mobileSearchOpen: false,
+      isAdmin: false,
       pollInterval: null
     }
   },
@@ -385,6 +396,7 @@ export default {
       const u = JSON.parse(userData);
       this.currentUserId = u.id;
       this.isHotelAdmin = u.role === 'hotel_admin';
+      this.isAdmin = u.role === 'admin';
       this.isSuperAdmin = u.role === 'super_admin';
     }
     this.fetchConversations();

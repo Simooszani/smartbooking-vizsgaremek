@@ -65,8 +65,14 @@
             </template>
 
             <template v-else>
-              <p class="mb-1 small">{{ n.message }}</p>
-              <div v-if="n.hotel" class="text-muted small">
+              <p class="mb-1 small">{{ getMainMessage(n.message) }}</p>
+              <div v-if="getReason(n.message)" class="reason-box mt-2">
+                <div class="fw-semibold small text-muted mb-1">
+                  <i class="bi bi-quote me-1"></i>{{ currentLocale === 'hu' ? 'Indoklás' : 'Reason' }}:
+                </div>
+                <p class="mb-0 small fst-italic">{{ getReason(n.message) }}</p>
+              </div>
+              <div v-if="n.hotel" class="text-muted small mt-1">
                 <i class="bi bi-building me-1"></i>{{ n.hotel.name }}
               </div>
             </template>
@@ -132,6 +138,16 @@ export default {
         warning: 'bi-exclamation-triangle-fill text-warning',
       };
       return map[type] || 'bi-info-circle-fill text-primary';
+    },
+
+    getMainMessage(msg) {
+      if (!msg) return '';
+      return msg.split('|||')[0];
+    },
+
+    getReason(msg) {
+      if (!msg || !msg.includes('|||')) return null;
+      return msg.split('|||')[1];
     },
 
     getTypeLabel(type) {
@@ -229,6 +245,12 @@ export default {
   justify-content: center;
   font-size: 1.1rem;
   flex-shrink: 0;
+}
+.reason-box {
+  background: #fef9ef;
+  border-left: 3px solid #e9c46a;
+  border-radius: 0 8px 8px 0;
+  padding: 0.5rem 0.75rem;
 }
 .unread-dot {
   width: 8px;

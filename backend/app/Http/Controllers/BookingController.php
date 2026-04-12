@@ -91,7 +91,7 @@ class BookingController extends Controller
                 'hotel_id' => $booking->room ? $booking->room->hotel_id : null,
                 'booking_id' => $booking->id,
                 'type' => 'booking_cancelled',
-                'message' => "A foglalásod a(z) {$hotelName} szállodában törlésre került. Indok: {$reason}",
+                'message' => "A foglalásod a(z) {$hotelName} szállodában törlésre került.|||{$reason}",
             ]);
         }
 

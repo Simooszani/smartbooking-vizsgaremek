@@ -82,6 +82,7 @@
               <div class="user-info-badge d-none d-lg-block">
                 <span class="fw-bold small">{{ userName }}</span>
                 <span class="text-muted-light small d-block" style="font-size: 0.7rem; line-height: 1;">{{ userEmail }}</span>
+                <span v-if="userBadgeInfo" class="d-block" style="font-size: 0.65rem; line-height: 1; margin-top: 1px; color: #e9c46a;">{{ userBadgeInfo }}</span>
               </div>
               <button @click="logout" class="btn btn-outline-coral btn-sm rounded-pill px-3">
                 <i class="bi bi-box-arrow-right me-1"></i>{{ t('navbar.logout') }}
@@ -129,6 +130,16 @@ export default {
     },
     userEmail() {
       return this.authUser ? this.authUser.email : '';
+    },
+    userBadgeInfo() {
+      if (!this.authUser) return '';
+      if (this.authUser.role === 'hotel_admin' && this.authUser.managed_hotel) {
+        return this.authUser.managed_hotel.name;
+      }
+      if (this.authUser.role === 'admin' && this.authUser.admin_city) {
+        return this.authUser.admin_city;
+      }
+      return '';
     }
   },
   methods: {

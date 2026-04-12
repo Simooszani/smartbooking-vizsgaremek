@@ -291,6 +291,9 @@ export default {
     warn_suspended: 'Warning issued and account suspended!',
     warning_levels: '3 warns = 2 weeks | 4 warns = 1 month | 5+ warns = 1 year',
   },
+  footer: {
+    rights: 'All rights reserved.',
+  },
   common: {
     from: 'from',
     to: 'to',

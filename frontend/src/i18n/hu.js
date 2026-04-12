@@ -291,6 +291,9 @@ export default {
     warn_suspended: 'Figyelmeztetés kiadva és a fiók felfüggesztve!',
     warning_levels: '3 warn = 2 hét | 4 warn = 1 hónap | 5+ warn = 1 év',
   },
+  footer: {
+    rights: 'Minden jog fenntartva.',
+  },
   common: {
     from: 'tól',
     to: 'ig',

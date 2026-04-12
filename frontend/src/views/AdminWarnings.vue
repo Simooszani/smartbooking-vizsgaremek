@@ -144,8 +144,8 @@ export default {
             <td class="small">${w.reason}</td>
             <td class="small" style="white-space:nowrap;">${w.admin ? w.admin.name : '-'}</td>
             <td class="text-center">
-              <button class="btn btn-outline-danger btn-sm px-2 py-0 delete-warn-btn" data-id="${w.id}">
-                <i class="bi bi-trash"></i>
+              <button class="btn btn-danger btn-sm px-2 py-1 delete-warn-btn" data-id="${w.id}" style="cursor:pointer;z-index:10;position:relative;">
+                <i class="bi bi-trash" style="pointer-events:none;"></i>
               </button>
             </td>
           </tr>`

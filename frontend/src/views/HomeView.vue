@@ -60,7 +60,7 @@
     <!-- Footer -->
     <footer class="footer-section mt-5">
       <div class="container text-center py-4">
-        <p class="mb-0 text-muted small">&copy; 2026 SmartBooking. All rights reserved.</p>
+        <p class="mb-0 text-muted small">&copy; 2026 SmartBooking. {{ t('footer.rights') }}</p>
       </div>
     </footer>
   </div>
@@ -80,6 +80,39 @@ export default {
 <style scoped>
 .home-page {
   min-height: 100vh;
+  background: linear-gradient(180deg, #f8f9fa 0%, #eef2f7 40%, #e8eff8 70%, #f0f4f8 100%);
+  position: relative;
+  overflow: hidden;
+}
+.home-page::before {
+  content: '';
+  position: absolute;
+  top: 500px;
+  left: -120px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(42,157,143,0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+.home-page::after {
+  content: '';
+  position: absolute;
+  top: 600px;
+  right: -80px;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(233,196,106,0.10) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+.home-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Carousel */
@@ -138,6 +171,16 @@ export default {
   color: #264653;
   font-weight: 700;
   font-size: 1.5rem;
+}
+
+/* Footer */
+.footer-section {
+  background: linear-gradient(135deg, #264653 0%, #1a1a2e 100%);
+  color: rgba(255,255,255,0.7);
+  margin-top: auto;
+}
+.footer-section p {
+  color: rgba(255,255,255,0.6) !important;
 }
 
 @media (max-width: 767.98px) {

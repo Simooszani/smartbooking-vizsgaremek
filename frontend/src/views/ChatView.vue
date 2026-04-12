@@ -9,22 +9,34 @@
       <div class="conversations-panel">
         <div class="p-3 border-bottom">
           <h6 class="fw-bold mb-2 d-none d-md-block">{{ t('chat.conversations') }}</h6>
-          <div class="position-relative">
+          <!-- Desktop search -->
+          <div class="position-relative d-none d-md-block">
             <i class="bi bi-search position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%); color: #888; font-size: 0.8rem;"></i>
             <input
               v-model="searchQuery"
               type="text"
-              class="form-control form-control-sm rounded-pill ps-4 d-none d-md-block"
+              class="form-control form-control-sm rounded-pill ps-4"
               :placeholder="t('chat.search_placeholder')">
-            <button class="btn btn-sm btn-outline-secondary rounded-pill d-md-none w-100" @click="mobileSearchOpen = !mobileSearchOpen">
-              <i class="bi bi-search"></i>
-            </button>
-            <input
-              v-if="mobileSearchOpen"
-              v-model="searchQuery"
-              type="text"
-              class="form-control form-control-sm rounded-pill ps-4 mt-2 d-md-none"
-              :placeholder="t('chat.search_placeholder')">
+          </div>
+          <!-- Mobile search -->
+          <div class="d-md-none">
+            <div v-if="!mobileSearchOpen" class="text-center">
+              <button class="btn btn-sm btn-outline-secondary rounded-circle" @click="mobileSearchOpen = true" style="width:36px;height:36px;">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+            <div v-else class="position-relative">
+              <i class="bi bi-search position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%); color: #888; font-size: 0.8rem;"></i>
+              <input
+                v-model="searchQuery"
+                type="text"
+                class="form-control form-control-sm rounded-pill ps-4 pe-4"
+                :placeholder="t('chat.search_placeholder')"
+                @blur="if(!searchQuery) mobileSearchOpen = false">
+              <button class="btn btn-sm position-absolute border-0 p-0" style="right:8px;top:50%;transform:translateY(-50%);" @click="searchQuery=''; mobileSearchOpen=false">
+                <i class="bi bi-x-lg small text-muted"></i>
+              </button>
+            </div>
           </div>
         </div>
         <div v-if="filteredConversations.length === 0" class="text-center py-4 text-muted small">
@@ -63,37 +75,39 @@
         <template v-else>
           <!-- Chat header -->
           <div class="chat-header">
-            <div class="d-flex align-items-center justify-content-between">
-              <div>
-                <strong>{{ getConvName(activeConv) }}</strong>
-                <span class="text-muted small ms-2" v-if="activeConv.hotel">{{ activeConv.hotel.name }}</span>
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <div class="text-truncate me-2">
+                <strong class="small">{{ getConvName(activeConv) }}</strong>
+                <span class="text-muted small ms-1 d-none d-md-inline" v-if="activeConv.hotel">{{ activeConv.hotel.name }}</span>
               </div>
-              <div class="d-flex gap-2 flex-wrap">
+              <div class="d-flex gap-1 flex-shrink-0">
                 <!-- Report button for hotel admin -->
                 <button
                   v-if="isHotelAdmin && activeConv.user_id !== currentUserId"
                   @click="reportUser"
-                  class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                  <i class="bi bi-flag me-1"></i>{{ t('hotel_admin.report_user') }}
+                  class="btn btn-outline-danger btn-sm rounded-pill px-2"
+                  :title="t('hotel_admin.report_user')">
+                  <i class="bi bi-flag"></i><span class="d-none d-lg-inline ms-1">{{ t('hotel_admin.report_user') }}</span>
                 </button>
                 <!-- Warn button for super_admin -->
                 <button
                   v-if="isSuperAdmin && activeConv.user_id !== currentUserId"
                   @click="warnUser"
-                  class="btn btn-outline-warning btn-sm rounded-pill px-3"
+                  class="btn btn-outline-warning btn-sm rounded-pill px-2"
                   :title="t('hotel_admin.warn_user')">
-                  <i class="bi bi-exclamation-triangle me-1"></i>{{ t('hotel_admin.warn_user') }}
+                  <i class="bi bi-exclamation-triangle"></i><span class="d-none d-lg-inline ms-1">{{ t('hotel_admin.warn_user') }}</span>
                 </button>
                 <!-- Delete conversation button for super_admin -->
                 <button
                   v-if="isSuperAdmin"
                   @click="deleteConversation"
-                  class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                  class="btn btn-outline-danger btn-sm rounded-pill px-2"
                   :title="t('chat.delete_conversation')">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
             </div>
+            <div class="text-muted small d-md-none text-truncate" v-if="activeConv.hotel">{{ activeConv.hotel.name }}</div>
           </div>
 
           <!-- Messages -->

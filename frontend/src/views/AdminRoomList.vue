@@ -50,7 +50,10 @@
                   <div class="fw-bold text-dark small">{{ room.hotel ? room.hotel.name : t('admin.unknown_hotel') }}</div>
                   <small class="text-muted" v-if="room.hotel"><i class="bi bi-geo-alt"></i> {{ room.hotel.address }}</small>
                 </td>
-                <td><span :class="getRoomClass(room.type)" class="badge px-2 py-1">{{ room.type }}</span></td>
+                <td>
+                  <span :class="getRoomClass(room.type)" class="badge px-2 py-1">{{ room.type }}</span>
+                  <span v-if="hasMultipleOfType[room.hotel_id + '_' + room.type] > 1" class="badge bg-light text-dark border ms-1">#{{ room.roomNumber }}</span>
+                </td>
                 <td><i class="bi bi-people-fill me-1 text-muted"></i> {{ room.capacity }} {{ t('admin.person') }}</td>
                 <td class="fw-bold">{{ Number(room.price_per_night).toLocaleString('hu-HU') }} Ft</td>
                 <td class="text-center">
@@ -80,6 +83,7 @@
               <div>
                 <span class="fw-bold text-teal">#{{ room.id }}</span>
                 <span :class="getRoomClass(room.type)" class="badge px-2 py-1 ms-2">{{ room.type }}</span>
+                <span v-if="hasMultipleOfType[room.hotel_id + '_' + room.type] > 1" class="badge bg-light text-dark border ms-1">#{{ room.roomNumber }}</span>
               </div>
               <span class="fw-bold">{{ Number(room.price_per_night).toLocaleString('hu-HU') }} Ft</span>
             </div>
@@ -125,14 +129,31 @@ export default {
     }
   },
   computed: {
+    numberedRooms() {
+      const counters = {};
+      return this.rooms.map(room => {
+        const key = room.hotel_id + '_' + room.type;
+        counters[key] = (counters[key] || 0) + 1;
+        return { ...room, roomNumber: counters[key] };
+      });
+    },
     filteredRooms() {
-      if (!this.searchQuery) return this.rooms;
+      const rooms = this.numberedRooms;
+      if (!this.searchQuery) return rooms;
       const q = this.searchQuery.toLowerCase();
-      return this.rooms.filter(room =>
+      return rooms.filter(room =>
         (room.hotel && room.hotel.name.toLowerCase().includes(q)) ||
         (room.type && room.type.toLowerCase().includes(q)) ||
         (room.hotel && room.hotel.address && room.hotel.address.toLowerCase().includes(q))
       );
+    },
+    hasMultipleOfType() {
+      const counts = {};
+      this.rooms.forEach(r => {
+        const key = r.hotel_id + '_' + r.type;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      return counts;
     }
   },
   methods: {

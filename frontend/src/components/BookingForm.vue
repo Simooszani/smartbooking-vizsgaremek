@@ -112,10 +112,10 @@
                     <transition name="slide">
                       <div v-if="isCategoryOpen(hotel.id, cat.type)" class="room-category-rooms mt-2">
                         <div class="row g-2">
-                          <div class="col-md-6 col-lg-4" v-for="room in cat.rooms" :key="room.id">
+                          <div class="col-md-6 col-lg-4" v-for="(room, idx) in cat.rooms" :key="room.id">
                             <div class="room-card-mini">
                               <div class="d-flex justify-content-between align-items-center">
-                                <span class="small text-muted">#{{ room.id }}</span>
+                                <span class="small fw-semibold text-primary-dark">{{ cat.type }} #{{ idx + 1 }}</span>
                                 <span class="fw-bold text-primary-dark">{{ Number(room.price_per_night).toLocaleString('hu-HU') }} {{ t('hotel.per_night') }}</span>
                               </div>
                               <button @click.stop="bookRoom(hotel, room)" class="btn btn-coral btn-sm w-100 mt-2 rounded-pill">

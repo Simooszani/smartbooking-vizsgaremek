@@ -84,7 +84,7 @@
                   </td>
 
                   <td>
-                    <span class="badge bg-accent-light text-accent-dark">{{ b.room ? b.room.type : 'N/A' }}</span>
+                    <span class="badge bg-accent-light text-accent-dark">{{ b.room ? b.room.type : 'N/A' }}<template v-if="b.room && b.room.has_duplicates"> #{{ b.room.room_number }}</template></span>
                   </td>
 
                   <td class="text-center">

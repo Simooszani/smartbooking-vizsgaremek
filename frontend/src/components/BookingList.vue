@@ -21,7 +21,7 @@
             <td>
               <div v-if="b.room">
                 <strong class="d-block text-primary-dark">{{ b.room.hotel ? b.room.hotel.name : '' }}</strong>
-                <span class="badge bg-teal-light text-teal me-1">{{ b.room.type }}</span>
+                <span class="badge bg-teal-light text-teal me-1">{{ b.room.type }}<template v-if="b.room.has_duplicates"> #{{ b.room.room_number }}</template></span>
                 <small class="text-muted">({{ b.room.capacity }} {{ t('dashboard.person') }})</small>
               </div>
               <span v-else class="text-danger small">{{ t('dashboard.no_room') }}</span>

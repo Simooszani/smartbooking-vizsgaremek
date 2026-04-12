@@ -35,7 +35,7 @@
             </td>
             <td>
               <div class="fw-bold text-dark small">{{ b.room && b.room.hotel ? b.room.hotel.name : 'N/A' }}</div>
-              <span class="badge bg-teal-light text-teal small">{{ b.room ? b.room.type : 'N/A' }}</span>
+              <span class="badge bg-teal-light text-teal small">{{ b.room ? b.room.type : 'N/A' }}<template v-if="b.room && b.room.has_duplicates"> #{{ b.room.room_number }}</template></span>
             </td>
             <td class="text-center">
               <div class="small">

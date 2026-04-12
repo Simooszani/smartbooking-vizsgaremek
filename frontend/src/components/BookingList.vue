@@ -5,7 +5,8 @@
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
-            <th class="ps-4">{{ t('dashboard.hotel') }}</th>
+            <th class="ps-4">{{ t('admin.booking_code_label') }}</th>
+            <th>{{ t('dashboard.hotel') }}</th>
             <th>{{ t('dashboard.period') }}</th>
             <th class="text-center">{{ t('dashboard.guests') }}</th>
             <th class="text-center">{{ t('dashboard.status') }}</th>
@@ -15,6 +16,9 @@
         <tbody>
           <tr v-for="b in bookings" :key="b.id">
             <td class="ps-4">
+              <span class="badge bg-dark font-monospace small">{{ b.booking_code || '-' }}</span>
+            </td>
+            <td>
               <div v-if="b.room">
                 <strong class="d-block text-primary-dark">{{ b.room.hotel ? b.room.hotel.name : '' }}</strong>
                 <span class="badge bg-teal-light text-teal me-1">{{ b.room.type }}</span>
@@ -51,12 +55,13 @@
     <!-- Mobile card layout -->
     <div class="d-md-none p-3">
       <div v-for="b in bookings" :key="'m'+b.id" class="booking-card-mobile mb-3">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <div>
-            <strong class="text-primary-dark" v-if="b.room && b.room.hotel">{{ b.room.hotel.name }}</strong>
-            <span v-if="b.room" class="badge bg-teal-light text-teal ms-2 small">{{ b.room.type }}</span>
-          </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-dark font-monospace small">{{ b.booking_code || '-' }}</span>
           <span :class="getStatusClass(b.status)" class="badge">{{ t('status.' + (b.status || 'confirmed')) }}</span>
+        </div>
+        <div class="mb-2">
+          <strong class="text-primary-dark" v-if="b.room && b.room.hotel">{{ b.room.hotel.name }}</strong>
+          <span v-if="b.room" class="badge bg-teal-light text-teal ms-2 small">{{ b.room.type }}</span>
         </div>
         <div class="row g-2 mb-2 small">
           <div class="col-6">

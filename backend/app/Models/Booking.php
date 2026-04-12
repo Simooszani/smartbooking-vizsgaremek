@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class Booking extends Model
 {
@@ -15,8 +16,27 @@ class Booking extends Model
         'check_in',
         'check_out',
         'guests',
-        'status'
+        'status',
+        'booking_code'
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($booking) {
+            if (!$booking->booking_code) {
+                $booking->booking_code = self::generateBookingCode();
+            }
+        });
+    }
+
+    public static function generateBookingCode(): string
+    {
+        do {
+            $code = strtoupper(Str::random(2)) . rand(100, 999) . strtoupper(Str::random(2));
+        } while (self::where('booking_code', $code)->exists());
+
+        return $code;
+    }
 
     public function room()
     {

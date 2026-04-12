@@ -16,23 +16,38 @@
       </div>
 
       <div v-if="!loading" class="row mb-4 g-3">
-        <div class="col-12 col-sm-6 col-md-4">
+        <div class="col-6 col-md-3">
           <div class="stat-card border-teal">
             <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.total_bookings') }}</h6>
-            <h3 class="fw-bold mb-0 text-teal">{{ allBookings.length }} {{ t('admin.pieces') }}</h3>
+            <h3 class="fw-bold mb-0 text-teal">{{ filteredBookings.length }} {{ t('admin.pieces') }}</h3>
           </div>
         </div>
-        <div class="col-12 col-sm-6 col-md-4">
+        <div class="col-6 col-md-3">
           <div class="stat-card border-accent">
             <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.unique_guests') }}</h6>
             <h3 class="fw-bold mb-0 text-accent">{{ uniqueGuestsCount }} {{ t('admin.person') }}</h3>
           </div>
         </div>
-        <div class="col-12 col-sm-12 col-md-4">
+        <div class="col-6 col-md-3">
+          <div class="stat-card border-coral">
+            <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.total_guests') }}</h6>
+            <h3 class="fw-bold mb-0 text-coral">{{ totalGuestsCount }} {{ t('admin.person') }}</h3>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
           <div class="stat-card border-success">
             <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.system_status') }}</h6>
             <h3 class="fw-bold mb-0 text-success small">{{ t('admin.online') }}</h3>
           </div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div v-if="!loading" class="mb-3">
+        <div class="position-relative">
+          <i class="bi bi-search position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:#888;"></i>
+          <input v-model="searchQuery" type="text" class="form-control rounded-pill ps-5 border-0 shadow-sm"
+            :placeholder="t('admin.search_bookings_placeholder')">
         </div>
       </div>
 
@@ -45,7 +60,7 @@
 
           <AdminBookingList
             v-else
-            :bookings="allBookings"
+            :bookings="filteredBookings"
             @refresh="fetchAdminData"
           />
         </div>
@@ -66,14 +81,30 @@ export default {
   data() {
     return {
       allBookings: [],
-      loading: true
+      loading: true,
+      searchQuery: ''
     }
   },
   computed: {
+    filteredBookings() {
+      if (!this.searchQuery.trim()) return this.allBookings;
+      const q = this.searchQuery.trim().toLowerCase();
+      return this.allBookings.filter(b => {
+        const userName = b.user ? b.user.name.toLowerCase() : '';
+        const userEmail = b.user ? b.user.email.toLowerCase() : '';
+        const hotelName = b.room && b.room.hotel ? b.room.hotel.name.toLowerCase() : '';
+        const roomType = b.room ? b.room.type.toLowerCase() : '';
+        const code = b.booking_code ? b.booking_code.toLowerCase() : '';
+        return userName.includes(q) || userEmail.includes(q) || hotelName.includes(q) || roomType.includes(q) || code.includes(q);
+      });
+    },
     uniqueGuestsCount() {
-      if (!this.allBookings.length) return 0;
-      const emails = this.allBookings.map(b => b.user?.email).filter(e => e);
+      if (!this.filteredBookings.length) return 0;
+      const emails = this.filteredBookings.map(b => b.user?.email).filter(e => e);
       return new Set(emails).size;
+    },
+    totalGuestsCount() {
+      return this.filteredBookings.reduce((sum, b) => sum + (b.guests || 0), 0);
     },
     currentFriendlyDate() {
       const loc = this.currentLocale === 'hu' ? 'hu-HU' : 'en-US';
@@ -122,6 +153,8 @@ export default {
 }
 .border-teal { border-left-color: #2a9d8f !important; }
 .border-accent { border-left-color: #e9c46a !important; }
+.border-coral { border-left-color: #e76f51 !important; }
+.text-coral { color: #e76f51; }
 .border-success { border-left-color: #198754 !important; }
 .main-content { margin-left: 260px; }
 .h3-responsive { font-size: 1.5rem; }

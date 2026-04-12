@@ -10,10 +10,14 @@ use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
-    // Sima user saját foglalásai
+    // Sima user saját foglalásai (csak aktívak - check_out >= ma)
     public function index()
     {
-        return Booking::with(['room.hotel'])->where('user_id', Auth::id())->get();
+        return Booking::with(['room.hotel'])
+            ->where('user_id', Auth::id())
+            ->where('check_out', '>=', now()->toDateString())
+            ->orderBy('check_in')
+            ->get();
     }
 
     public function store(Request $request)
@@ -99,10 +103,13 @@ class BookingController extends Controller
         return response()->json(['message' => 'Foglalás törölve']);
     }
 
-    // Admin: összes foglalás
+    // Admin: összes aktív foglalás (check_out >= ma)
     public function allBookings()
     {
-        return Booking::with(['user', 'room.hotel'])->get();
+        return Booking::with(['user', 'room.hotel'])
+            ->where('check_out', '>=', now()->toDateString())
+            ->orderBy('check_in')
+            ->get();
     }
 
     // Hotel Admin: saját hotel foglalásai
@@ -118,6 +125,8 @@ class BookingController extends Controller
             ->whereHas('room', function ($q) use ($user) {
                 $q->where('hotel_id', $user->managed_hotel_id);
             })
+            ->where('check_out', '>=', now()->toDateString())
+            ->orderBy('check_in')
             ->get();
 
         return response()->json($bookings);

@@ -10,7 +10,8 @@
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
-            <th class="ps-3">{{ t('admin.guest_data') }}</th>
+            <th class="ps-3">{{ t('admin.booking_code_label') }}</th>
+            <th>{{ t('admin.guest_data') }}</th>
             <th>{{ t('admin.location_room') }}</th>
             <th class="text-center">{{ t('admin.period') }}</th>
             <th class="text-center">{{ t('admin.headcount') }}</th>
@@ -21,6 +22,9 @@
         <tbody>
           <tr v-for="b in bookings" :key="b.id">
             <td class="ps-3">
+              <span class="badge bg-dark font-monospace small">{{ b.booking_code || '-' }}</span>
+            </td>
+            <td>
               <div class="d-flex align-items-center">
                 <div class="avatar-circle me-2">{{ b.user ? b.user.name.charAt(0) : '?' }}</div>
                 <div>
@@ -71,17 +75,18 @@
     <!-- Mobile card layout -->
     <div v-if="bookings.length > 0" class="d-md-none p-3">
       <div v-for="b in bookings" :key="'m'+b.id" class="admin-booking-card mb-3">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <div class="d-flex align-items-center">
-            <div class="avatar-circle me-2">{{ b.user ? b.user.name.charAt(0) : '?' }}</div>
-            <div>
-              <div class="fw-bold small">{{ b.user ? b.user.name : 'N/A' }}</div>
-              <div class="text-muted small">{{ b.user ? b.user.email : '-' }}</div>
-            </div>
-          </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-dark font-monospace small">{{ b.booking_code || '-' }}</span>
           <span :class="getStatusClass(b.status)" class="badge">
             {{ t('status.' + (b.status || 'confirmed')) }}
           </span>
+        </div>
+        <div class="d-flex align-items-center mb-2">
+          <div class="avatar-circle me-2">{{ b.user ? b.user.name.charAt(0) : '?' }}</div>
+          <div>
+            <div class="fw-bold small">{{ b.user ? b.user.name : 'N/A' }}</div>
+            <div class="text-muted small">{{ b.user ? b.user.email : '-' }}</div>
+          </div>
         </div>
         <div class="small mb-1">
           <span class="fw-bold text-dark">{{ b.room && b.room.hotel ? b.room.hotel.name : 'N/A' }}</span>

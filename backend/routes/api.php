@@ -40,6 +40,8 @@ Route::middleware(['auth:sanctum', 'check_suspension'])->group(function () {
     Route::get('/messages/conversations', [MessageController::class, 'conversations']);
     Route::get('/messages/unread-count', [MessageController::class, 'unreadCount']);
     Route::post('/messages', [MessageController::class, 'send']);
+    Route::delete('/messages/conversations/{hotelId}/{userId}', [MessageController::class, 'destroyConversation']);
+    Route::delete('/messages/{id}', [MessageController::class, 'destroyMessage']);
     Route::get('/messages/{hotelId}/{userId}', [MessageController::class, 'messages']);
 
     // Hotel Admin végpontok

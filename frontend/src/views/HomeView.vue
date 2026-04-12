@@ -140,10 +140,12 @@ export default {
   font-size: 1.5rem;
 }
 
-@media (max-width: 768px) {
-  .hero-slide { height: 350px; }
-  .hero-title { font-size: 2rem; }
-  .hero-subtitle { font-size: 1rem; }
-  .search-card { margin-top: -40px; padding: 1.5rem; }
+@media (max-width: 767.98px) {
+  .hero-slide { height: 300px; }
+  .hero-title { font-size: 1.6rem; padding: 0 1rem; }
+  .hero-subtitle { font-size: 0.95rem; padding: 0 1rem; }
+  .search-card { margin-top: -30px; padding: 1.25rem; border-radius: 14px; }
+  .search-title { font-size: 1.15rem; }
+  .carousel-control-prev, .carousel-control-next { display: none; }
 }
 </style>

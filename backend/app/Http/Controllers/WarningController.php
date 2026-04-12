@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Warning;
 use App\Models\User;
 use App\Models\Report;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -54,6 +55,18 @@ class WarningController extends Controller
         if ($suspendedUntil) {
             $targetUser->update(['suspended_until' => $suspendedUntil]);
         }
+
+        // Notification to the warned user
+        Notification::create([
+            'user_id' => $targetUser->id,
+            'type' => 'warning',
+            'message' => json_encode([
+                'reason' => $request->reason,
+                'warning_count' => $warningCount,
+                'suspended_until' => $suspendedUntil ? $suspendedUntil->toIso8601String() : null,
+                'manual' => true,
+            ]),
+        ]);
 
         return response()->json([
             'warning' => $warning,

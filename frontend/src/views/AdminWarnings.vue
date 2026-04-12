@@ -1,9 +1,9 @@
 <template>
   <div class="d-flex bg-light min-vh-100">
     <AdminSidebar />
-    <div class="main-content flex-grow-1 p-4" style="margin-left: 260px;">
+    <div class="main-content flex-grow-1 p-3 p-md-4">
       <div class="mb-3">
-        <h2 class="fw-bold text-primary-dark m-0">{{ t('warnings.title') }}</h2>
+        <h2 class="fw-bold text-primary-dark m-0 h3-responsive">{{ t('warnings.title') }}</h2>
         <p class="text-muted small mb-0">{{ t('warnings.desc') }}</p>
       </div>
 
@@ -12,7 +12,7 @@
       </div>
 
       <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-0">
+        <div class="card-body p-0 table-responsive">
           <div v-if="loading" class="text-center py-5">
             <div class="spinner-border text-teal"></div>
           </div>
@@ -142,5 +142,10 @@ export default {
 .text-teal { color: #2a9d8f; }
 .bg-success-light { background: #e8f5e9; }
 .bg-orange { background: #e76f51; }
-@media (max-width: 768px) { .main-content { margin-left: 0 !important; } }
+.main-content { margin-left: 260px; }
+.h3-responsive { font-size: 1.5rem; }
+@media (max-width: 767.98px) {
+  .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+  .h3-responsive { font-size: 1.15rem; }
+}
 </style>

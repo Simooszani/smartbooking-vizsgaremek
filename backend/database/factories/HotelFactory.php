@@ -79,19 +79,19 @@ class HotelFactory extends Factory
 
     public function definition()
     {
-        $prefix = $this->faker->randomElement(self::$hotelPrefixes);
-        $suffix = $this->faker->randomElement(self::$hotelSuffixes);
-        $city = $this->faker->randomElement(array_keys(self::$cities));
+        $prefix = fake()->randomElement(self::$hotelPrefixes);
+        $suffix = fake()->randomElement(self::$hotelSuffixes);
+        $city = fake()->randomElement(array_keys(self::$cities));
         $zips = self::$cities[$city];
-        $zip = $this->faker->randomElement($zips);
-        $street = $this->faker->randomElement(self::$streets);
-        $number = $this->faker->numberBetween(1, 120);
+        $zip = fake()->randomElement($zips);
+        $street = fake()->randomElement(self::$streets);
+        $number = fake()->numberBetween(1, 120);
 
         return [
             'name' => $prefix . ' ' . $suffix,
             'address' => "$zip $city, $street $number.",
-            'description' => $this->faker->randomElement(self::$descriptions),
-            'rating' => $this->faker->randomFloat(1, 1, 5),
+            'description' => fake()->randomElement(self::$descriptions),
+            'rating' => fake()->randomFloat(1, 1, 5),
         ];
     }
 }

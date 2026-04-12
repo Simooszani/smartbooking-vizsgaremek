@@ -12,7 +12,7 @@ class ReviewFactory extends Factory
 
     public function definition()
     {
-        $rating = $this->faker->numberBetween(1, 5);
+        $rating = fake()->numberBetween(1, 5);
 
         $comments = [
             5 => [
@@ -59,7 +59,7 @@ class ReviewFactory extends Factory
         return [
             'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),
             'rating' => $rating,
-            'comment' => $this->faker->randomElement($comments[$rating]),
+            'comment' => fake()->randomElement($comments[$rating]),
         ];
     }
 }

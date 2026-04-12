@@ -30,10 +30,10 @@
       <div
         v-for="n in notifications" :key="n.id"
         class="notification-card mb-3"
-        :class="{ 'notification-unread': !n.is_read }"
+        :class="[{ 'notification-unread': !n.is_read }, n.type === 'warning' ? 'notification-warning' : '']"
         @click="markRead(n)">
         <div class="d-flex align-items-start">
-          <div class="notification-icon me-3">
+          <div class="notification-icon me-3" :class="n.type === 'warning' ? 'icon-warning' : ''">
             <i class="bi" :class="getIcon(n.type)"></i>
           </div>
           <div class="flex-grow-1">
@@ -41,10 +41,35 @@
               <span class="fw-bold small">{{ getTypeLabel(n.type) }}</span>
               <span class="text-muted small">{{ formatDate(n.created_at) }}</span>
             </div>
-            <p class="mb-1 small">{{ n.message }}</p>
-            <div v-if="n.hotel" class="text-muted small">
-              <i class="bi bi-building me-1"></i>{{ n.hotel.name }}
-            </div>
+
+            <template v-if="n.type === 'warning'">
+              <div class="warning-box">
+                <div class="mb-2"><strong>{{ t('notifications.warning_reason') }}:</strong> {{ parseWarning(n).reason }}</div>
+                <div class="mb-2"><strong>{{ t('notifications.warning_count') }}:</strong> {{ parseWarning(n).warning_count }}</div>
+                <div class="mb-2">
+                  <strong>{{ t('notifications.warning_consequence') }}:</strong>
+                  <span v-if="parseWarning(n).suspended_until">
+                    {{ t('notifications.warning_suspended_until') }}
+                    <span class="fw-bold text-danger ms-1">{{ formatDate(parseWarning(n).suspended_until) }}</span>
+                  </span>
+                  <span v-else>{{ t('notifications.warning_no_suspension') }}</span>
+                </div>
+                <div class="text-muted small mt-2">
+                  <i class="bi bi-info-circle me-1"></i>{{ t('notifications.warning_levels_info') }}
+                </div>
+                <div class="manual-note mt-2">
+                  <i class="bi bi-shield-exclamation me-1"></i>
+                  {{ t('notifications.warning_manual_note') }}
+                </div>
+              </div>
+            </template>
+
+            <template v-else>
+              <p class="mb-1 small">{{ n.message }}</p>
+              <div v-if="n.hotel" class="text-muted small">
+                <i class="bi bi-building me-1"></i>{{ n.hotel.name }}
+              </div>
+            </template>
           </div>
           <div v-if="!n.is_read" class="unread-dot ms-2"></div>
         </div>
@@ -104,13 +129,29 @@ export default {
       const map = {
         booking_cancelled: 'bi-x-circle-fill text-danger',
         message: 'bi-chat-dots-fill text-teal',
+        warning: 'bi-exclamation-triangle-fill text-warning',
       };
       return map[type] || 'bi-info-circle-fill text-primary';
     },
 
     getTypeLabel(type) {
       if (type === 'booking_cancelled') return this.t('notifications.booking_cancelled');
+      if (type === 'warning') return this.t('notifications.warning_received');
       return type;
+    },
+
+    parseWarning(n) {
+      try {
+        const data = typeof n.message === 'string' ? JSON.parse(n.message) : n.message;
+        return {
+          reason: data.reason || '',
+          warning_count: data.warning_count || 0,
+          suspended_until: data.suspended_until || null,
+          manual: data.manual !== false,
+        };
+      } catch (e) {
+        return { reason: n.message, warning_count: 0, suspended_until: null, manual: true };
+      }
     },
 
     formatDate(dateStr) {
@@ -152,6 +193,31 @@ export default {
 .notification-unread {
   background: #f0faf8;
   border-left: 4px solid #2a9d8f;
+}
+.notification-warning {
+  border-left: 4px solid #f4a261 !important;
+  background: #fff8f0;
+}
+.notification-warning.notification-unread {
+  background: #fff2e0;
+}
+.icon-warning {
+  background: #fff3cd !important;
+}
+.warning-box {
+  background: #fff;
+  border: 1px solid #f4a261;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+}
+.manual-note {
+  background: #fff3cd;
+  border: 1px dashed #f4a261;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: #7a4a1e;
+  font-size: 0.75rem;
 }
 .notification-icon {
   width: 38px;

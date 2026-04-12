@@ -1,46 +1,65 @@
 <template>
-  <div class="sidebar">
-    <div class="p-4 text-center border-bottom border-secondary">
-      <div class="sidebar-logo mb-2">
-        <i class="bi bi-building"></i>
+  <div>
+    <!-- Mobile burger button -->
+    <button class="mobile-burger d-md-none" @click="mobileOpen = !mobileOpen" :aria-label="t('admin.toggle_menu')">
+      <i class="bi" :class="mobileOpen ? 'bi-x-lg' : 'bi-list'"></i>
+    </button>
+
+    <!-- Overlay (mobile) -->
+    <div v-if="mobileOpen" class="sidebar-overlay d-md-none" @click="mobileOpen = false"></div>
+
+    <div class="sidebar" :class="{ 'sidebar-mobile-open': mobileOpen }">
+      <div class="p-4 text-center border-bottom border-secondary">
+        <div class="sidebar-logo mb-2">
+          <i class="bi bi-building"></i>
+        </div>
+        <h5 class="fw-bold mb-0 text-accent">SmartBooking</h5>
+        <small class="text-muted">{{ t('admin.panel') }}</small>
       </div>
-      <h5 class="fw-bold mb-0 text-accent">SmartBooking</h5>
-      <small class="text-muted">{{ t('admin.panel') }}</small>
+
+      <nav class="nav flex-column mt-3">
+        <router-link to="/admin" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link" exact @click.native="mobileOpen = false">
+          <i class="bi bi-calendar-check me-3"></i> {{ t('admin.bookings') }}
+        </router-link>
+
+        <router-link to="/admin/users" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link" @click.native="mobileOpen = false">
+          <i class="bi bi-people me-3"></i> {{ t('admin.users') }}
+        </router-link>
+
+        <router-link to="/admin/hotels" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link" @click.native="mobileOpen = false">
+          <i class="bi bi-building me-3"></i> {{ t('admin.hotels') }}
+        </router-link>
+
+        <router-link to="/admin/rooms" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link" @click.native="mobileOpen = false">
+          <i class="bi bi-door-open me-3"></i> {{ t('admin.rooms') }}
+        </router-link>
+
+        <router-link to="/admin/reports" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link" @click.native="mobileOpen = false">
+          <i class="bi bi-flag me-3"></i> {{ t('reports.title') }}
+        </router-link>
+
+        <router-link to="/admin/warnings" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link" @click.native="mobileOpen = false">
+          <i class="bi bi-exclamation-triangle me-3"></i> {{ t('warnings.title') }}
+        </router-link>
+
+        <hr class="mx-3 border-secondary">
+
+        <router-link to="/" class="nav-link text-muted py-3 px-4 d-flex align-items-center" @click.native="mobileOpen = false">
+          <i class="bi bi-house-door me-3"></i> {{ t('admin.back_home') }}
+        </router-link>
+      </nav>
     </div>
-
-    <nav class="nav flex-column mt-3">
-      <router-link to="/admin" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link" exact>
-        <i class="bi bi-calendar-check me-3"></i> {{ t('admin.bookings') }}
-      </router-link>
-
-      <router-link to="/admin/users" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link">
-        <i class="bi bi-people me-3"></i> {{ t('admin.users') }}
-      </router-link>
-
-      <router-link to="/admin/hotels" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link">
-        <i class="bi bi-building me-3"></i> {{ t('admin.hotels') }}
-      </router-link>
-
-      <router-link to="/admin/rooms" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link">
-        <i class="bi bi-door-open me-3"></i> {{ t('admin.rooms') }}
-      </router-link>
-
-      <router-link to="/admin/reports" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link">
-        <i class="bi bi-flag me-3"></i> {{ t('reports.title') }}
-      </router-link>
-
-      <router-link to="/admin/warnings" class="nav-link text-white py-3 px-4 d-flex align-items-center" active-class="active-link">
-        <i class="bi bi-exclamation-triangle me-3"></i> {{ t('warnings.title') }}
-      </router-link>
-
-      <hr class="mx-3 border-secondary">
-
-      <router-link to="/" class="nav-link text-muted py-3 px-4 d-flex align-items-center">
-        <i class="bi bi-house-door me-3"></i> {{ t('admin.back_home') }}
-      </router-link>
-    </nav>
   </div>
 </template>
+
+<script>
+export default {
+  name: 'AdminSidebar',
+  data() {
+    return { mobileOpen: false }
+  }
+}
+</script>
 
 <style scoped>
 .sidebar {
@@ -50,7 +69,8 @@
   left: 0;
   top: 0;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  z-index: 100;
+  z-index: 1050;
+  transition: transform 0.3s ease;
 }
 .sidebar-logo {
   width: 50px;
@@ -76,5 +96,39 @@
   background: rgba(42, 157, 143, 0.15) !important;
   border-left: 4px solid #2a9d8f !important;
   color: #2a9d8f !important;
+}
+
+.mobile-burger {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 1100;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: #1a1a2e;
+  color: #e9c46a;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1040;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 240px;
+  }
+  .sidebar.sidebar-mobile-open {
+    transform: translateX(0);
+  }
 }
 </style>

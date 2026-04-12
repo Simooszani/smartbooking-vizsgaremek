@@ -2,13 +2,13 @@
   <div class="d-flex bg-light min-vh-100">
     <AdminSidebar />
 
-    <div class="main-content flex-grow-1 p-4" style="margin-left: 260px;">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="main-content flex-grow-1 p-3 p-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
-          <h2 class="fw-bold text-primary-dark m-0">{{ t('admin.rooms_management') }}</h2>
+          <h2 class="fw-bold text-primary-dark m-0 h3-responsive">{{ t('admin.rooms_management') }}</h2>
           <p class="text-muted small mb-0">{{ t('admin.rooms_desc') }}</p>
         </div>
-        <button @click="openCreateModal" class="btn btn-teal shadow-sm px-4 py-2 rounded-pill">
+        <button @click="openCreateModal" class="btn btn-teal shadow-sm px-3 py-2 rounded-pill">
           <i class="bi bi-plus-lg me-2"></i>{{ t('admin.add_room') }}
         </button>
       </div>
@@ -32,7 +32,7 @@
           </div>
         </div>
 
-        <div class="card-body p-0" v-else>
+        <div class="card-body p-0 table-responsive" v-else>
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -246,7 +246,10 @@ export default {
 .text-teal { color: #2a9d8f; }
 .btn-teal { background: #2a9d8f; color: #fff; border: none; font-weight: 600; }
 .btn-teal:hover { background: #238b7e; color: #fff; }
-@media (max-width: 768px) {
-  .main-content { margin-left: 0 !important; }
+.main-content { margin-left: 260px; }
+.h3-responsive { font-size: 1.5rem; }
+@media (max-width: 767.98px) {
+  .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+  .h3-responsive { font-size: 1.15rem; }
 }
 </style>

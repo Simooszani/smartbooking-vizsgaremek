@@ -2,7 +2,7 @@
   <div class="booking-system">
     <!-- Search form -->
     <div class="row g-3 align-items-end">
-      <div class="col-md-4">
+      <div class="col-12 col-md-4">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.destination') }}</label>
         <div class="input-group">
           <span class="input-group-text bg-white border-end-0"><i class="bi bi-geo-alt text-coral"></i></span>
@@ -10,22 +10,22 @@
             :placeholder="t('search.destination_placeholder')">
         </div>
       </div>
-      <div class="col-md-2">
+      <div class="col-6 col-md-2">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.check_in') }}</label>
         <input v-model="search.check_in" type="date" class="form-control" :min="today">
       </div>
-      <div class="col-md-2">
+      <div class="col-6 col-md-2">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.check_out') }}</label>
         <input v-model="search.check_out" type="date" class="form-control" :min="search.check_in || today">
       </div>
-      <div class="col-md-2">
+      <div class="col-6 col-md-2">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.guests') }}</label>
         <div class="input-group">
           <span class="input-group-text bg-white border-end-0"><i class="bi bi-people text-coral"></i></span>
           <input v-model.number="search.guests" type="number" class="form-control border-start-0 ps-0" min="1" max="10">
         </div>
       </div>
-      <div class="col-md-2">
+      <div class="col-6 col-md-2">
         <button @click="performSearch" class="btn btn-search w-100 py-2" :disabled="searching">
           <span v-if="searching" class="spinner-border spinner-border-sm me-1"></span>
           <i v-else class="bi bi-search me-1"></i>
@@ -42,7 +42,7 @@
             <!-- Hotel header - clickable -->
             <div class="hotel-header" @click="toggleHotel(hotel.id)">
               <div class="row g-0 align-items-center">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                   <div class="hotel-img-wrapper">
                     <img :src="'https://picsum.photos/seed/hotel' + hotel.id + '/400/280'"
                       :alt="hotel.name" class="hotel-img">
@@ -51,7 +51,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-md-7">
+                <div class="col-12 col-md-7">
                   <div class="hotel-info px-3 py-2">
                     <h4 class="hotel-name mb-1">{{ hotel.name }}</h4>
                     <p class="hotel-address mb-1">
@@ -62,8 +62,8 @@
                     </p>
                   </div>
                 </div>
-                <div class="col-md-2 text-center">
-                  <div class="hotel-price-preview py-2">
+                <div class="col-12 col-md-2 text-center">
+                  <div class="hotel-price-preview py-2 px-3">
                     <div class="price-from text-muted small">{{ getMinPrice(hotel) }}</div>
                     <div class="fw-bold text-coral">Ft / {{ currentLocale === 'hu' ? 'éj' : 'night' }}</div>
                     <button class="btn btn-sm btn-outline-teal mt-2 rounded-pill px-3">
@@ -88,18 +88,18 @@
                   </h5>
                   <div v-for="cat in getRoomCategories(hotel)" :key="cat.type" class="room-category mb-3">
                     <div class="room-category-header" @click.stop="toggleCategory(hotel.id, cat.type)">
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                          <div class="room-type-badge me-3">{{ cat.type }}</div>
+                      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                          <div class="room-type-badge">{{ cat.type }}</div>
                           <span class="text-muted small">
                             <i class="bi bi-people-fill me-1"></i>{{ cat.capacity }} {{ t('hotel.capacity') }}
                           </span>
-                          <span class="badge bg-light text-dark border ms-2">
+                          <span class="badge bg-light text-dark border">
                             {{ cat.count }} {{ t('common.pieces') }}
                           </span>
                         </div>
                         <div class="d-flex align-items-center">
-                          <div class="text-end me-3">
+                          <div class="text-end me-2">
                             <span class="room-price">{{ Number(cat.minPrice).toLocaleString('hu-HU') }}</span>
                             <span class="room-price-label ms-1">{{ t('hotel.per_night') }}</span>
                           </div>
@@ -528,8 +528,18 @@ export default {
   border-color: #dee2e6;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .hotel-img-wrapper { height: 200px; }
   .hotel-info { padding: 1rem !important; }
+  .hotel-name { font-size: 1rem; }
+  .hotel-address { font-size: 0.8rem; }
+  .hotel-price-preview {
+    border-top: 1px solid #eee;
+    padding-top: 0.75rem !important;
+  }
+  .rooms-section, .reviews-section { padding: 1rem !important; }
+  .room-category-header { padding: 0.7rem 0.75rem; }
+  .room-price { font-size: 0.95rem; }
+  .room-type-badge { font-size: 0.7rem; padding: 2px 8px; }
 }
 </style>

@@ -1,10 +1,10 @@
 <template>
   <div class="d-flex bg-light min-vh-100">
     <AdminSidebar />
-    <div class="main-content flex-grow-1 p-4" style="margin-left: 260px;">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="main-content flex-grow-1 p-3 p-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
-          <h2 class="fw-bold text-primary-dark m-0">{{ t('reports.title') }}</h2>
+          <h2 class="fw-bold text-primary-dark m-0 h3-responsive">{{ t('reports.title') }}</h2>
           <p class="text-muted small mb-0">{{ t('reports.desc') }}</p>
         </div>
         <span class="badge bg-danger text-white px-3 py-2 rounded-pill shadow-sm">
@@ -13,7 +13,7 @@
       </div>
 
       <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-0">
+        <div class="card-body p-0 table-responsive">
           <div v-if="loading" class="text-center py-5">
             <div class="spinner-border text-teal"></div>
           </div>
@@ -182,5 +182,10 @@ export default {
 .bg-warning-light { background: #fff8e1; }
 .btn-outline-teal { border: 2px solid #2a9d8f; color: #2a9d8f; }
 .btn-outline-teal:hover { background: #2a9d8f; color: #fff; }
-@media (max-width: 768px) { .main-content { margin-left: 0 !important; } }
+.main-content { margin-left: 260px; }
+.h3-responsive { font-size: 1.5rem; }
+@media (max-width: 767.98px) {
+  .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+  .h3-responsive { font-size: 1.15rem; }
+}
 </style>

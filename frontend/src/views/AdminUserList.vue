@@ -1,11 +1,11 @@
 <template>
   <div class="d-flex bg-light min-vh-100">
     <AdminSidebar />
-    <div class="main-content flex-grow-1 p-4" style="margin-left: 260px;">
+    <div class="main-content flex-grow-1 p-3 p-md-4">
 
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
-          <h2 class="fw-bold text-primary-dark m-0">{{ t('admin.users_management') }}</h2>
+          <h2 class="fw-bold text-primary-dark m-0 h3-responsive">{{ t('admin.users_management') }}</h2>
           <p class="text-muted small mb-0">{{ t('admin.users_desc') }}</p>
         </div>
         <span class="badge bg-teal text-white px-3 py-2 rounded-pill shadow-sm">
@@ -13,19 +13,26 @@
         </span>
       </div>
 
-      <!-- Search -->
-      <div class="mb-4">
-        <div class="input-group shadow-sm border rounded-pill overflow-hidden" style="max-width: 500px; background: white;">
+      <!-- Search + role filter -->
+      <div class="mb-4 d-flex flex-wrap gap-2 align-items-center">
+        <div class="input-group shadow-sm border rounded-pill overflow-hidden flex-grow-1" style="max-width: 500px; min-width: 240px; background: white;">
           <span class="input-group-text bg-white border-0 ps-3">
             <i class="bi bi-search text-muted"></i>
           </span>
           <input v-model="searchQuery" type="text" class="form-control border-0 py-2"
             :placeholder="t('admin.search_users')" style="box-shadow: none;">
         </div>
+        <select v-model="roleFilter" class="form-select rounded-pill shadow-sm" style="max-width: 220px;">
+          <option value="">{{ t('admin.all_roles') }}</option>
+          <option value="user">{{ t('admin.guest_role') }}</option>
+          <option value="hotel_admin">{{ t('admin.hotel_admin_role') }}</option>
+          <option value="admin">{{ t('admin.admin_role') }}</option>
+          <option value="super_admin">{{ t('admin.super_admin_role') }}</option>
+        </select>
       </div>
 
       <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-0">
+        <div class="card-body p-0 table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -98,17 +105,18 @@ export default {
       hotels: [],
       currentUserId: null,
       currentUserRole: null,
-      searchQuery: ''
+      searchQuery: '',
+      roleFilter: ''
     }
   },
   computed: {
     filteredUsers() {
-      if (!this.searchQuery) return this.users;
-      const q = this.searchQuery.toLowerCase();
-      return this.users.filter(u =>
-        u.name.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q)
-      );
+      const q = this.searchQuery.trim().toLowerCase();
+      return this.users.filter(u => {
+        if (this.roleFilter && u.role !== this.roleFilter) return false;
+        if (!q) return true;
+        return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+      });
     }
   },
   methods: {
@@ -268,7 +276,10 @@ export default {
 .avatar-super { background: linear-gradient(135deg, #dc3545, #ff6b6b) !important; }
 .avatar-admin { background: linear-gradient(135deg, #e76f51, #f4a261) !important; }
 .avatar-hotel { background: linear-gradient(135deg, #e9c46a, #f4a261) !important; }
-@media (max-width: 768px) {
-  .main-content { margin-left: 0 !important; }
+.main-content { margin-left: 260px; }
+.h3-responsive { font-size: 1.5rem; }
+@media (max-width: 767.98px) {
+  .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+  .h3-responsive { font-size: 1.15rem; }
 }
 </style>

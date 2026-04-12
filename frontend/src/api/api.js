@@ -328,6 +328,24 @@ const api = {
         return await response.json();
     },
 
+    async deleteMessage(id) {
+        const response = await fetch(`${BASE_URL}/messages/${id}`, {
+            method: 'DELETE',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
+    async deleteConversation(hotelId, userId) {
+        const response = await fetch(`${BASE_URL}/messages/conversations/${hotelId}/${userId}`, {
+            method: 'DELETE',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
     async getMessageUnreadCount() {
         const response = await fetch(`${BASE_URL}/messages/unread-count`, {
             method: 'GET',

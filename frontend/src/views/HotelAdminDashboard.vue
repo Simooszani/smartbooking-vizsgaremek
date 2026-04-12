@@ -2,17 +2,17 @@
   <div class="d-flex bg-light min-vh-100">
     <HotelAdminSidebar />
 
-    <div class="main-content flex-grow-1 p-4" style="margin-left: 260px;">
+    <div class="main-content flex-grow-1 p-3 p-md-4">
       <!-- Header -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
         <div>
-          <h2 class="fw-bold text-primary-dark m-0">{{ t('hotel_admin.my_bookings') }}</h2>
+          <h2 class="fw-bold text-primary-dark m-0 h3-responsive">{{ t('hotel_admin.my_bookings') }}</h2>
           <p class="text-muted small mb-0" v-if="hotelName">
             <i class="bi bi-building me-1"></i>{{ hotelName }}
           </p>
         </div>
         <div class="text-end">
-          <span class="badge bg-white text-dark shadow-sm p-2 border rounded-pill">
+          <span class="badge bg-white text-dark shadow-sm p-2 border rounded-pill d-none d-sm-inline-block">
             <i class="bi bi-calendar3 me-2 text-accent"></i>{{ currentFriendlyDate }}
           </span>
         </div>
@@ -20,19 +20,19 @@
 
       <!-- Stats -->
       <div v-if="!loading" class="row mb-4 g-3">
-        <div class="col-md-4">
+        <div class="col-12 col-sm-6 col-md-4">
           <div class="stat-card border-accent">
             <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.total_bookings') }}</h6>
             <h3 class="fw-bold mb-0 text-accent">{{ bookings.length }} {{ t('admin.pieces') }}</h3>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-sm-6 col-md-4">
           <div class="stat-card border-teal">
             <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.unique_guests') }}</h6>
             <h3 class="fw-bold mb-0 text-teal">{{ uniqueGuestsCount }} {{ t('admin.person') }}</h3>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-sm-12 col-md-4">
           <div class="stat-card border-success">
             <h6 class="text-muted text-uppercase small fw-bold">{{ t('admin.system_status') }}</h6>
             <h3 class="fw-bold mb-0 text-success small">{{ t('admin.online') }}</h3>
@@ -277,7 +277,10 @@ export default {
 .border-accent { border-left-color: #e9c46a !important; }
 .border-success { border-left-color: #198754 !important; }
 
-@media (max-width: 768px) {
-  .main-content { margin-left: 0 !important; }
+.main-content { margin-left: 260px; }
+.h3-responsive { font-size: 1.5rem; }
+@media (max-width: 767.98px) {
+  .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+  .h3-responsive { font-size: 1.15rem; }
 }
 </style>

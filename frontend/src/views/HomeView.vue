@@ -1,5 +1,10 @@
 <template>
   <div class="home-page">
+    <!-- Decorative blurred background elements -->
+    <div class="deco-blob deco-blob-1"></div>
+    <div class="deco-blob deco-blob-2"></div>
+    <div class="deco-blob deco-blob-3"></div>
+
     <!-- Hero Carousel -->
     <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
       <div class="carousel-indicators">
@@ -84,33 +89,37 @@ export default {
   position: relative;
   overflow: hidden;
 }
-.home-page::before {
-  content: '';
+.deco-blob {
   position: absolute;
-  top: 500px;
-  left: -120px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.deco-blob-1 {
+  top: 480px;
+  left: -100px;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(42,157,143,0.15) 0%, transparent 70%);
+  filter: blur(80px);
+}
+.deco-blob-2 {
+  top: 550px;
+  right: -60px;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(42,157,143,0.12) 0%, transparent 70%);
-  border-radius: 50%;
-  filter: blur(60px);
-  pointer-events: none;
-  z-index: 0;
+  background: radial-gradient(circle, rgba(233,196,106,0.12) 0%, transparent 70%);
+  filter: blur(80px);
 }
-.home-page::after {
-  content: '';
-  position: absolute;
-  top: 600px;
-  right: -80px;
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(233,196,106,0.10) 0%, transparent 70%);
-  border-radius: 50%;
-  filter: blur(60px);
-  pointer-events: none;
-  z-index: 0;
+.deco-blob-3 {
+  top: 750px;
+  left: 30%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(231,111,81,0.08) 0%, transparent 70%);
+  filter: blur(80px);
 }
-.home-page > * {
+.home-page > *:not(.deco-blob) {
   position: relative;
   z-index: 1;
 }

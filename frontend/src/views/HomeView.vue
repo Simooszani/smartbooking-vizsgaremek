@@ -145,5 +145,16 @@ export default {
   .hero-title { font-size: 2rem; }
   .hero-subtitle { font-size: 1rem; }
   .search-card { margin-top: -40px; padding: 1.5rem; }
+  .search-title { font-size: 1.2rem; }
+}
+
+@media (max-width: 576px) {
+  .hero-slide { height: 280px; }
+  .hero-title { font-size: 1.5rem; }
+  .hero-subtitle { font-size: 0.9rem; }
+  .search-card { margin-top: -30px; padding: 1rem; border-radius: 14px; }
+  .search-title { font-size: 1.1rem; }
+  .carousel-control-prev-icon,
+  .carousel-control-next-icon { width: 30px; height: 30px; }
 }
 </style>

@@ -2,7 +2,7 @@
   <div class="booking-system">
     <!-- Search form -->
     <div class="row g-3 align-items-end">
-      <div class="col-md-4">
+      <div class="col-12 col-sm-6 col-md-4">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.destination') }}</label>
         <div class="input-group">
           <span class="input-group-text bg-white border-end-0"><i class="bi bi-geo-alt text-coral"></i></span>
@@ -10,22 +10,22 @@
             :placeholder="t('search.destination_placeholder')">
         </div>
       </div>
-      <div class="col-md-2">
+      <div class="col-6 col-sm-3 col-md-2">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.check_in') }}</label>
         <input v-model="search.check_in" type="date" class="form-control" :min="today">
       </div>
-      <div class="col-md-2">
+      <div class="col-6 col-sm-3 col-md-2">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.check_out') }}</label>
         <input v-model="search.check_out" type="date" class="form-control" :min="search.check_in || today">
       </div>
-      <div class="col-md-2">
+      <div class="col-6 col-sm-3 col-md-2">
         <label class="form-label fw-semibold text-muted small text-uppercase">{{ t('search.guests') }}</label>
         <div class="input-group">
           <span class="input-group-text bg-white border-end-0"><i class="bi bi-people text-coral"></i></span>
-          <input v-model.number="search.guests" type="number" class="form-control border-start-0 ps-0" min="1" max="10">
+          <input v-model.number="search.guests" type="number" class="form-control border-start-0 ps-0" min="1" max="20">
         </div>
       </div>
-      <div class="col-md-2">
+      <div class="col-6 col-sm-3 col-md-2">
         <button @click="performSearch" class="btn btn-search w-100 py-2" :disabled="searching">
           <span v-if="searching" class="spinner-border spinner-border-sm me-1"></span>
           <i v-else class="bi bi-search me-1"></i>
@@ -42,7 +42,7 @@
             <!-- Hotel header - clickable -->
             <div class="hotel-header" @click="toggleHotel(hotel.id)">
               <div class="row g-0 align-items-center">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                   <div class="hotel-img-wrapper">
                     <img :src="'https://picsum.photos/seed/hotel' + hotel.id + '/400/280'"
                       :alt="hotel.name" class="hotel-img">
@@ -51,7 +51,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-md-7">
+                <div class="col-12 col-md-7">
                   <div class="hotel-info px-3 py-2">
                     <h4 class="hotel-name mb-1">{{ hotel.name }}</h4>
                     <p class="hotel-address mb-1">
@@ -62,7 +62,7 @@
                     </p>
                   </div>
                 </div>
-                <div class="col-md-2 text-center">
+                <div class="col-12 col-md-2 text-center">
                   <div class="hotel-price-preview py-2">
                     <div class="price-from text-muted small">{{ getMinPrice(hotel) }}</div>
                     <div class="fw-bold text-coral">Ft / {{ currentLocale === 'hu' ? 'éj' : 'night' }}</div>
@@ -70,7 +70,7 @@
                       <i class="bi" :class="expandedHotel === hotel.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                       {{ expandedHotel === hotel.id ? t('hotel.hide_rooms') : t('hotel.show_rooms') }}
                     </button>
-                    <button @click.stop="openChat(hotel.id)" class="btn btn-sm btn-outline-secondary mt-1 rounded-pill px-3" v-if="isLoggedIn">
+                    <button @click.stop="openChat(hotel)" class="btn btn-sm btn-outline-secondary mt-1 rounded-pill px-3" v-if="isLoggedIn">
                       <i class="bi bi-chat-dots me-1"></i>{{ t('chat.contact_hotel') }}
                     </button>
                   </div>
@@ -110,11 +110,15 @@
                     <transition name="slide">
                       <div v-if="isCategoryOpen(hotel.id, cat.type)" class="room-category-rooms mt-2">
                         <div class="row g-2">
-                          <div class="col-md-6 col-lg-4" v-for="room in cat.rooms" :key="room.id">
+                          <div class="col-12 col-sm-6 col-lg-4" v-for="room in cat.rooms" :key="room.id">
                             <div class="room-card-mini">
                               <div class="d-flex justify-content-between align-items-center">
                                 <span class="small text-muted">#{{ room.id }}</span>
                                 <span class="fw-bold text-primary-dark">{{ Number(room.price_per_night).toLocaleString('hu-HU') }} {{ t('hotel.per_night') }}</span>
+                              </div>
+                              <div v-if="search.check_in && search.check_out" class="mt-1 small">
+                                <span class="fw-bold text-coral">{{ getNights() }} {{ t('booking.nights') }}: {{ (getNights() * Number(room.price_per_night)).toLocaleString('hu-HU') }} Ft</span>
+                                <span class="text-muted"> ({{ t('booking.tax_label') }}: {{ Math.round(getNights() * Number(room.price_per_night) * 0.05).toLocaleString('hu-HU') }} Ft)</span>
                               </div>
                               <button @click.stop="bookRoom(hotel, room)" class="btn btn-coral btn-sm w-100 mt-2 rounded-pill">
                                 <i class="bi bi-calendar-plus me-1"></i>{{ t('hotel.select') }}
@@ -192,6 +196,15 @@ export default {
       return !!localStorage.getItem('access_token');
     }
   },
+  mounted() {
+    const pending = localStorage.getItem('pendingBooking');
+    if (pending) {
+      const data = JSON.parse(pending);
+      this.search = data.search;
+      localStorage.removeItem('pendingBooking');
+      this.performSearch();
+    }
+  },
   methods: {
     async performSearch() {
       this.searching = true;
@@ -248,6 +261,11 @@ export default {
       return !!this.openCategories[hotelId + '_' + type];
     },
 
+    getNights() {
+      if (!this.search.check_in || !this.search.check_out) return 0;
+      return Math.ceil((new Date(this.search.check_out) - new Date(this.search.check_in)) / 86400000);
+    },
+
     getMinPrice(hotel) {
       if (!hotel.rooms || hotel.rooms.length === 0) return '—';
       const min = Math.min(...hotel.rooms.map(r => Number(r.price_per_night)));
@@ -266,16 +284,56 @@ export default {
 
       const token = localStorage.getItem('access_token');
       if (!token) {
+        localStorage.setItem('pendingBooking', JSON.stringify({
+          search: this.search
+        }));
         Swal.fire({
           icon: 'info',
           title: this.t('booking.login_required'),
           confirmButtonColor: '#e76f51',
           confirmButtonText: this.t('navbar.login')
         }).then(() => {
-          this.$router.push('/login');
+          this.$router.push('/login?redirect=booking');
         });
         return;
       }
+
+      const nights = Math.ceil((new Date(this.search.check_out) - new Date(this.search.check_in)) / 86400000);
+      if (nights > 31) {
+        Swal.fire({
+          icon: 'warning',
+          title: this.t('booking.max_nights_title'),
+          text: this.t('booking.max_nights_text'),
+          confirmButtonColor: '#264653'
+        });
+        return;
+      }
+
+      const totalPrice = nights * Number(room.price_per_night);
+      const tax = Math.round(totalPrice * 0.05);
+      const priceFormatted = totalPrice.toLocaleString('hu-HU');
+      const taxFormatted = tax.toLocaleString('hu-HU');
+      const perNightFormatted = Number(room.price_per_night).toLocaleString('hu-HU');
+
+      const { isConfirmed } = await Swal.fire({
+        icon: 'question',
+        title: this.t('booking.confirm_title'),
+        html: `<div class="text-start">
+          <p><strong>${hotel.name}</strong></p>
+          <p>${room.type}</p>
+          <hr>
+          <p>${nights} ${this.t('booking.nights')} × ${perNightFormatted} Ft</p>
+          <h4 class="fw-bold">${priceFormatted} Ft</h4>
+          <p class="text-muted small">(${this.t('booking.tax_label')}: ${taxFormatted} Ft)</p>
+        </div>`,
+        showCancelButton: true,
+        confirmButtonText: this.t('booking.confirm_btn'),
+        cancelButtonText: this.t('common.cancel'),
+        confirmButtonColor: '#2a9d8f',
+        cancelButtonColor: '#6c757d'
+      });
+
+      if (!isConfirmed) return;
 
       try {
         const bookingData = {
@@ -317,8 +375,8 @@ export default {
       }
     },
 
-    openChat(hotelId) {
-      this.$router.push('/chat?hotel=' + hotelId);
+    openChat(hotel) {
+      this.$router.push('/chat?hotel=' + hotel.id + '&hotelName=' + encodeURIComponent(hotel.name));
     },
 
     async openReviewModal(hotel) {
@@ -531,5 +589,17 @@ export default {
 @media (max-width: 768px) {
   .hotel-img-wrapper { height: 200px; }
   .hotel-info { padding: 1rem !important; }
+  .hotel-name { font-size: 1rem; }
+  .hotel-price-preview { padding: 0.5rem 1rem !important; }
+  .room-category-header { padding: 0.65rem 0.75rem; }
+  .room-category-header .d-flex { flex-wrap: wrap; gap: 0.5rem; }
+}
+
+@media (max-width: 576px) {
+  .hotel-img-wrapper { height: 160px; }
+  .hotel-name { font-size: 0.95rem; }
+  .hotel-address { font-size: 0.8rem; }
+  .price-from { font-size: 1rem; }
+  .room-price { font-size: 0.95rem; }
 }
 </style>

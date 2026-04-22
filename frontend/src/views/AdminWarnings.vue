@@ -22,7 +22,8 @@
             <p class="mt-3">Nincsenek figyelmeztett felhasználók.</p>
           </div>
 
-          <table v-else class="table table-hover align-middle mb-0">
+          <div v-else class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
                 <th class="ps-3">{{ t('warnings.user') }}</th>
@@ -63,6 +64,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>

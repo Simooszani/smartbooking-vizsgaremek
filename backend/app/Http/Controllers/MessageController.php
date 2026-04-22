@@ -51,7 +51,7 @@ class MessageController extends Controller
 
         $messages = Message::where('hotel_id', $hotelId)
             ->where('user_id', $userId)
-            ->with('sender:id,name')
+            ->with('sender:id,name,role')
             ->orderBy('created_at', 'asc')
             ->get();
 

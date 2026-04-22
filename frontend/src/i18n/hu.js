@@ -57,6 +57,12 @@ export default {
     failed: 'Sikertelen foglalás',
     room_taken: 'Ez a szoba a választott időpontban már foglalt!',
     error: 'Hiba történt a foglalás során.',
+    nights: 'éjszaka',
+    confirm_title: 'Foglalás megerősítése',
+    confirm_btn: 'Foglalás megerősítése',
+    tax_label: 'ÁFA 5%',
+    max_nights_title: 'Túl hosszú foglalás',
+    max_nights_text: 'Maximum 31 éjszakára lehet foglalni.',
   },
   login: {
     title: 'Bejelentkezés',

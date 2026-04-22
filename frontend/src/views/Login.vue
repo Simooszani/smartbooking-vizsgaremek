@@ -112,7 +112,10 @@ export default {
           localStorage.setItem('loginSuccess', 'true');
 
           const user = data.user || JSON.parse(localStorage.getItem('user') || '{}');
-          if (user.role === 'admin' || user.role === 'super_admin') {
+          const redirect = this.$route.query.redirect;
+          if (redirect === 'booking' && user.role === 'user') {
+            window.location.href = '/';
+          } else if (user.role === 'admin' || user.role === 'super_admin') {
             window.location.href = '/admin';
           } else if (user.role === 'hotel_admin') {
             window.location.href = '/hotel-admin';

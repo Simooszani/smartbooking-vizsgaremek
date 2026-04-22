@@ -33,6 +33,7 @@
         </div>
 
         <div class="card-body p-0" v-else>
+          <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -83,6 +84,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>

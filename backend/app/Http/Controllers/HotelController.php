@@ -33,7 +33,10 @@ class HotelController extends Controller
         $query = Hotel::with(['rooms', 'reviews.user']);
 
         if ($destination) {
-            $query->where('address', 'like', "%$destination%");
+            $query->where(function ($q) use ($destination) {
+                $q->where('address', 'like', "% $destination,%")
+                  ->orWhere('name', 'like', "%$destination%");
+            });
         }
 
         $hotels = $query->get();
@@ -45,14 +48,9 @@ class HotelController extends Controller
                 if ($checkIn && $checkOut) {
                     $isOccupied = Booking::where('room_id', $room->id)
                         ->where('status', 'confirmed')
-                        ->where(function ($q) use ($checkIn, $checkOut) {
-                            $q->whereBetween('check_in', [$checkIn, $checkOut])
-                              ->orWhereBetween('check_out', [$checkIn, $checkOut])
-                              ->orWhere(function ($q2) use ($checkIn, $checkOut) {
-                                  $q2->where('check_in', '<=', $checkIn)
-                                     ->where('check_out', '>=', $checkOut);
-                              });
-                        })->exists();
+                        ->where('check_in', '<', $checkOut)
+                        ->where('check_out', '>', $checkIn)
+                        ->exists();
 
                     if ($isOccupied) return false;
                 }

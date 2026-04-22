@@ -64,8 +64,18 @@
           <div class="messages-area" ref="messagesArea">
             <div v-for="msg in messages" :key="msg.id"
               class="message-bubble"
-              :class="msg.sender_id === currentUserId ? 'message-sent' : 'message-received'">
-              <div class="message-sender small fw-bold mb-1" v-if="msg.sender">{{ msg.sender.name }}</div>
+              :class="[
+                msg.sender_id === currentUserId ? 'message-sent' : 'message-received',
+                msg.sender && msg.sender.role === 'admin' ? 'message-role-admin' : '',
+                msg.sender && msg.sender.role === 'hotel_admin' ? 'message-role-hotel' : '',
+                msg.sender && msg.sender.role === 'super_admin' ? 'message-role-superadmin' : ''
+              ]">
+              <div class="message-sender small fw-bold mb-1" v-if="msg.sender">
+                {{ msg.sender.name }}
+                <span v-if="msg.sender.role === 'admin'" class="badge-role badge-admin">Admin</span>
+                <span v-if="msg.sender.role === 'hotel_admin'" class="badge-role badge-hotel">Hotel Manager</span>
+                <span v-if="msg.sender.role === 'super_admin'" class="badge-role badge-superadmin">{{ t('admin.super_admin_role') }}</span>
+              </div>
               <div class="message-text">{{ msg.message }}</div>
               <div class="message-time">{{ formatTime(msg.created_at) }}</div>
             </div>
@@ -229,7 +239,8 @@ export default {
         if (existing) {
           this.openConversation(existing);
         } else {
-          const conv = { hotel_id: parseInt(hotelId), user_id: targetUserId, hotel: { name: '' } };
+          const hotelName = this.$route.query.hotelName || '';
+          const conv = { hotel_id: parseInt(hotelId), user_id: targetUserId, hotel: { name: hotelName } };
           this.activeConv = conv;
           try {
             this.messages = await api.getMessages(hotelId, targetUserId);
@@ -332,6 +343,31 @@ export default {
 .message-text { font-size: 0.9rem; }
 .message-time { font-size: 0.65rem; opacity: 0.6; text-align: right; margin-top: 2px; }
 .message-sent .message-time { color: rgba(255,255,255,0.7); }
+
+/* Role-based colors */
+.message-role-admin .message-sender { color: #e9c46a; opacity: 1; }
+.message-role-hotel .message-sender { color: #2a9d8f; opacity: 1; }
+.message-role-superadmin .message-sender { color: #e76f51; opacity: 1; }
+.message-sent .message-sender { color: rgba(255,255,255,0.9); }
+.message-sent.message-role-admin .message-sender { color: #e9c46a; }
+.message-sent.message-role-hotel .message-sender { color: #a8f0e6; }
+.message-sent.message-role-superadmin .message-sender { color: #ffb4a2; }
+
+.badge-role {
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.badge-admin { background: #e9c46a; color: #264653; }
+.badge-hotel { background: #2a9d8f; color: #fff; }
+.badge-superadmin { background: #e76f51; color: #fff; }
+
+.message-role-admin.message-received { border-left: 3px solid #e9c46a; }
+.message-role-hotel.message-received { border-left: 3px solid #2a9d8f; }
+.message-role-superadmin.message-received { border-left: 3px solid #e76f51; }
 .chat-input {
   padding: 0.75rem 1rem;
   border-top: 1px solid #eee;

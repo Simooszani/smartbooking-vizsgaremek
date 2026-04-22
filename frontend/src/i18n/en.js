@@ -57,6 +57,12 @@ export default {
     failed: 'Booking failed',
     room_taken: 'This room is already booked for the selected dates!',
     error: 'An error occurred during booking.',
+    nights: 'nights',
+    confirm_title: 'Confirm Booking',
+    confirm_btn: 'Confirm Booking',
+    tax_label: 'VAT 5%',
+    max_nights_title: 'Booking too long',
+    max_nights_text: 'Maximum 31 nights can be booked.',
   },
   login: {
     title: 'Sign In',

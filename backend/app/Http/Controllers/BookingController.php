@@ -7,6 +7,7 @@ use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {
@@ -25,6 +26,14 @@ class BookingController extends Controller
             'check_out' => 'required|date|after:check_in',
             'guests' => 'required|integer|min:1',
         ]);
+
+        $checkIn = Carbon::parse($request->check_in);
+        $checkOut = Carbon::parse($request->check_out);
+        if ($checkIn->diffInDays($checkOut) > 31) {
+            return response()->json([
+                'message' => 'Maximum 31 éjszakára lehet foglalni!'
+            ], 422);
+        }
 
         $room = \App\Models\Room::findOrFail($request->room_id);
 

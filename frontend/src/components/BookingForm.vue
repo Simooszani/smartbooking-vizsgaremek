@@ -621,10 +621,10 @@ export default {
 .review-stars { font-size: 0.75rem; }
 .review-filter-select {
   width: auto;
-  min-width: 80px;
+  min-width: 100px;
   border-radius: 20px;
   font-size: 0.8rem;
-  padding: 2px 10px;
+  padding: 2px 28px 2px 10px;
   border-color: #dee2e6;
 }
 .review-nav-btn {

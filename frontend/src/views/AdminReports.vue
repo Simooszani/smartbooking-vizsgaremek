@@ -1,10 +1,10 @@
 <template>
   <div class="d-flex bg-light min-vh-100">
     <AdminSidebar />
-    <div class="main-content flex-grow-1 p-4" style="margin-left: 260px;">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="main-content flex-grow-1 p-3 p-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
-          <h2 class="fw-bold text-primary-dark m-0">{{ t('reports.title') }}</h2>
+          <h2 class="fw-bold text-primary-dark m-0 h3-responsive">{{ t('reports.title') }}</h2>
           <p class="text-muted small mb-0">{{ t('reports.desc') }}</p>
         </div>
         <span class="badge bg-danger text-white px-3 py-2 rounded-pill shadow-sm">
@@ -12,18 +12,18 @@
         </span>
       </div>
 
-      <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-0">
-          <div v-if="loading" class="text-center py-5">
-            <div class="spinner-border text-teal"></div>
-          </div>
+      <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-teal"></div>
+      </div>
 
-          <div v-else-if="reports.length === 0" class="text-center py-5 text-muted">
-            <i class="bi bi-flag display-4"></i>
-            <p class="mt-3">Nincsenek jelentések.</p>
-          </div>
+      <div v-else-if="reports.length === 0" class="text-center py-5 text-muted">
+        <i class="bi bi-flag display-4"></i>
+        <p class="mt-3">Nincsenek jelentések.</p>
+      </div>
 
-          <div v-else class="table-responsive">
+      <!-- Desktop table -->
+      <div v-else class="card shadow-sm border-0 rounded-3 d-none d-md-block">
+        <div class="card-body p-0 table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -48,33 +48,19 @@
                 <td>
                   <span class="badge bg-warning-light text-dark">{{ getReasonLabel(r.reason) }}</span>
                 </td>
-                <td class="small" style="max-width: 200px;">
-                  {{ r.description || '-' }}
-                </td>
+                <td class="small" style="max-width: 200px;">{{ r.description || '-' }}</td>
                 <td class="text-center">
-                  <span :class="getStatusClass(r.status)" class="badge">
-                    {{ t('reports.' + r.status) }}
-                  </span>
+                  <span :class="getStatusClass(r.status)" class="badge">{{ t('reports.' + r.status) }}</span>
                 </td>
                 <td class="text-center">
                   <div class="d-flex justify-content-center gap-1">
-                    <button
-                      v-if="r.status === 'pending'"
-                      @click="issueWarningFromReport(r)"
-                      class="btn btn-outline-danger btn-sm rounded-pill px-2"
-                      :title="t('reports.issue_warning')">
+                    <button v-if="r.status === 'pending'" @click="issueWarningFromReport(r)" class="btn btn-outline-danger btn-sm rounded-pill px-2" :title="t('reports.issue_warning')">
                       <i class="bi bi-exclamation-triangle me-1"></i>Warn
                     </button>
-                    <button
-                      v-if="r.status === 'pending'"
-                      @click="dismissReport(r.id)"
-                      class="btn btn-outline-secondary btn-sm rounded-pill px-2">
+                    <button v-if="r.status === 'pending'" @click="dismissReport(r.id)" class="btn btn-outline-secondary btn-sm rounded-pill px-2">
                       <i class="bi bi-x-circle"></i>
                     </button>
-                    <router-link
-                      v-if="r.reported_user"
-                      :to="'/chat?hotel=' + r.hotel_id + '&user=' + r.reported_user.id"
-                      class="btn btn-outline-teal btn-sm rounded-pill px-2">
+                    <router-link v-if="r.reported_user" :to="'/chat?hotel=' + r.hotel_id + '&user=' + r.reported_user.id" class="btn btn-outline-teal btn-sm rounded-pill px-2">
                       <i class="bi bi-chat-dots"></i>
                     </router-link>
                   </div>
@@ -82,6 +68,39 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Mobile card layout -->
+      <div v-if="!loading && reports.length > 0" class="d-md-none">
+        <div v-for="r in reports" :key="'m'+r.id" class="card shadow-sm border-0 rounded-3 mb-3">
+          <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <div class="fw-bold small">{{ r.reported_user ? r.reported_user.name : '?' }}</div>
+                <div class="text-muted small">{{ r.reported_user ? r.reported_user.email : '' }}</div>
+              </div>
+              <span :class="getStatusClass(r.status)" class="badge">{{ t('reports.' + r.status) }}</span>
+            </div>
+            <div class="small mb-1">
+              <span class="text-muted">{{ t('reports.reporter') }}:</span> {{ r.reporter ? r.reporter.name : '?' }}
+              <span v-if="r.hotel" class="text-muted"> ({{ r.hotel.name }})</span>
+            </div>
+            <div class="mb-2">
+              <span class="badge bg-warning-light text-dark">{{ getReasonLabel(r.reason) }}</span>
+            </div>
+            <div v-if="r.description" class="small text-muted mb-2">{{ r.description }}</div>
+            <div class="d-flex gap-2">
+              <button v-if="r.status === 'pending'" @click="issueWarningFromReport(r)" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                <i class="bi bi-exclamation-triangle me-1"></i>Warn
+              </button>
+              <button v-if="r.status === 'pending'" @click="dismissReport(r.id)" class="btn btn-outline-secondary btn-sm rounded-pill px-2">
+                <i class="bi bi-x-circle"></i>
+              </button>
+              <router-link v-if="r.reported_user" :to="'/chat?hotel=' + r.hotel_id + '&user=' + r.reported_user.id" class="btn btn-outline-teal btn-sm rounded-pill px-2">
+                <i class="bi bi-chat-dots"></i>
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -184,5 +203,10 @@ export default {
 .bg-warning-light { background: #fff8e1; }
 .btn-outline-teal { border: 2px solid #2a9d8f; color: #2a9d8f; }
 .btn-outline-teal:hover { background: #2a9d8f; color: #fff; }
-@media (max-width: 768px) { .main-content { margin-left: 0 !important; } }
+.main-content { margin-left: 260px; }
+.h3-responsive { font-size: 1.5rem; }
+@media (max-width: 767.98px) {
+  .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+  .h3-responsive { font-size: 1.15rem; }
+}
 </style>

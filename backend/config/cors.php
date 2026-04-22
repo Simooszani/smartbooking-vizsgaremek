@@ -3,7 +3,11 @@
 return [
     'paths' => ['*'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['http://localhost:8080'], // ITT LEGYEN A VUE PORTJA
+    'allowed_origins' => [
+        'https://smartbookingvr.hu',
+        'https://www.smartbookingvr.hu',
+        'http://localhost:8080',
+    ],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],

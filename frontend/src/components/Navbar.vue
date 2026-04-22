@@ -76,11 +76,21 @@
             </ul>
           </li>
 
-          <li class="nav-item ms-2">
-            <button v-if="isLoggedIn" @click="logout" class="btn btn-outline-coral btn-sm rounded-pill px-3">
-              <i class="bi bi-box-arrow-right me-1"></i>{{ t('navbar.logout') }}
-            </button>
-            <router-link v-else class="btn btn-coral btn-sm rounded-pill px-3" to="/login">
+          <!-- User info + logout / login -->
+          <li class="nav-item ms-2" v-if="isLoggedIn">
+            <div class="d-flex align-items-center gap-2">
+              <div class="user-info-badge d-none d-lg-block">
+                <span class="fw-bold small">{{ userName }}</span>
+                <span class="text-muted-light small d-block" style="font-size: 0.7rem; line-height: 1;">{{ userEmail }}</span>
+                <span v-if="userBadgeInfo" class="d-block" style="font-size: 0.65rem; line-height: 1; margin-top: 1px; color: #e9c46a;">{{ userBadgeInfo }}</span>
+              </div>
+              <button @click="logout" class="btn btn-outline-coral btn-sm rounded-pill px-3">
+                <i class="bi bi-box-arrow-right me-1"></i>{{ t('navbar.logout') }}
+              </button>
+            </div>
+          </li>
+          <li class="nav-item ms-2" v-else>
+            <router-link class="btn btn-coral btn-sm rounded-pill px-3" to="/login">
               <i class="bi bi-person me-1"></i>{{ t('navbar.login') }}
             </router-link>
           </li>
@@ -101,28 +111,73 @@ export default {
       scrolled: false,
       unreadCount: 0,
       msgUnreadCount: 0,
-      pollInterval: null
+      pollInterval: null,
+      authUser: null
     }
   },
   computed: {
     isLoggedIn() {
-      return !!localStorage.getItem('access_token');
+      return !!this.authUser;
     },
     isAdmin() {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      return user.role === 'admin' || user.role === 'super_admin';
+      return this.authUser && (this.authUser.role === 'admin' || this.authUser.role === 'super_admin');
     },
     isHotelAdmin() {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      return user.role === 'hotel_admin';
+      return this.authUser && this.authUser.role === 'hotel_admin';
+    },
+    userName() {
+      return this.authUser ? this.authUser.name : '';
+    },
+    userEmail() {
+      return this.authUser ? this.authUser.email : '';
+    },
+    userBadgeInfo() {
+      if (!this.authUser) return '';
+      if (this.authUser.role === 'hotel_admin' && this.authUser.managed_hotel) {
+        return this.authUser.managed_hotel.name;
+      }
+      if (this.authUser.role === 'admin' && this.authUser.admin_city) {
+        return this.authUser.admin_city;
+      }
+      return '';
     }
   },
   methods: {
+    loadUser() {
+      const token = localStorage.getItem('access_token');
+      const userData = localStorage.getItem('user');
+      if (token && userData) {
+        try {
+          this.authUser = JSON.parse(userData);
+        } catch (e) {
+          this.authUser = null;
+        }
+      } else {
+        this.authUser = null;
+      }
+    },
+    async validateToken() {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        this.authUser = null;
+        return;
+      }
+      try {
+        const user = await API.getMe();
+        localStorage.setItem('user', JSON.stringify(user));
+        this.authUser = user;
+      } catch (e) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        this.authUser = null;
+      }
+    },
     async logout() {
       await API.logout();
       this.unreadCount = 0;
+      this.msgUnreadCount = 0;
+      this.authUser = null;
       this.$router.push('/login');
-      location.reload();
     },
     switchLang(lang) {
       setLocale(lang);
@@ -145,8 +200,9 @@ export default {
   },
   mounted() {
     window.addEventListener('scroll', this.handleScroll);
+    this.loadUser();
+    this.validateToken();
     this.fetchUnreadCount();
-    // Poll every 30s for new notifications
     this.pollInterval = setInterval(() => this.fetchUnreadCount(), 30000);
   },
   beforeDestroy() {
@@ -161,11 +217,13 @@ export default {
   background: rgba(38, 70, 83, 0.95);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
+  z-index: 1060;
 }
 .navbar-scrolled {
   background: rgba(38, 70, 83, 1);
   box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
   transition: all 0.3s ease;
+  z-index: 1060;
 }
 .navbar-brand {
   color: #fff !important;
@@ -228,4 +286,9 @@ export default {
   background-color: #2a9d8f;
 }
 .bg-teal { background: #2a9d8f; }
+.user-info-badge {
+  color: rgba(255,255,255,0.9);
+  line-height: 1.2;
+}
+.text-muted-light { color: rgba(255,255,255,0.55); }
 </style>

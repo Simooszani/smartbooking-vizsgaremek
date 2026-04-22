@@ -8,13 +8,42 @@
       <!-- Conversations list -->
       <div class="conversations-panel">
         <div class="p-3 border-bottom">
-          <h6 class="fw-bold mb-0">{{ t('chat.conversations') }}</h6>
+          <h6 class="fw-bold mb-2 d-none d-md-block">{{ t('chat.conversations') }}</h6>
+          <!-- Desktop search -->
+          <div class="position-relative d-none d-md-block">
+            <i class="bi bi-search position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%); color: #888; font-size: 0.8rem;"></i>
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="form-control form-control-sm rounded-pill ps-4"
+              :placeholder="t('chat.search_placeholder')">
+          </div>
+          <!-- Mobile search -->
+          <div class="d-md-none">
+            <div v-if="!mobileSearchOpen" class="text-center">
+              <button class="btn btn-sm btn-outline-secondary rounded-circle" @click="mobileSearchOpen = true" style="width:36px;height:36px;">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+            <div v-else class="position-relative">
+              <i class="bi bi-search position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%); color: #888; font-size: 0.8rem;"></i>
+              <input
+                v-model="searchQuery"
+                type="text"
+                class="form-control form-control-sm rounded-pill ps-4 pe-4"
+                :placeholder="t('chat.search_placeholder')"
+                @blur="if(!searchQuery) mobileSearchOpen = false">
+              <button class="btn btn-sm position-absolute border-0 p-0" style="right:8px;top:50%;transform:translateY(-50%);" @click="searchQuery=''; mobileSearchOpen=false">
+                <i class="bi bi-x-lg small text-muted"></i>
+              </button>
+            </div>
+          </div>
         </div>
-        <div v-if="conversations.length === 0" class="text-center py-4 text-muted small">
-          {{ t('chat.no_conversations') }}
+        <div v-if="filteredConversations.length === 0" class="text-center py-4 text-muted small">
+          {{ searchQuery ? t('chat.no_search_results') : t('chat.no_conversations') }}
         </div>
         <div
-          v-for="conv in conversations" :key="convKey(conv)"
+          v-for="conv in filteredConversations" :key="convKey(conv)"
           class="conversation-item"
           :class="{ active: isActiveConv(conv) }"
           @click="openConversation(conv)">
@@ -25,6 +54,7 @@
             <div class="flex-grow-1 overflow-hidden">
               <div class="fw-bold small text-truncate">{{ getConvName(conv) }}</div>
               <div class="text-muted small text-truncate" v-if="conv.hotel">{{ conv.hotel.name }}</div>
+              <div class="text-muted small text-truncate" v-if="isSuperAdmin && conv.user" style="font-size: 0.7rem;">{{ conv.user.email }}</div>
             </div>
             <span v-if="conv.unread_count > 0" class="badge bg-danger rounded-pill ms-2">
               {{ conv.unread_count }}
@@ -45,19 +75,39 @@
         <template v-else>
           <!-- Chat header -->
           <div class="chat-header">
-            <div class="d-flex align-items-center justify-content-between">
-              <div>
-                <strong>{{ getConvName(activeConv) }}</strong>
-                <span class="text-muted small ms-2" v-if="activeConv.hotel">{{ activeConv.hotel.name }}</span>
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <div class="text-truncate me-2">
+                <strong class="small">{{ getConvName(activeConv) }}</strong>
+                <span class="text-muted small ms-1 d-none d-md-inline" v-if="activeConv.hotel">{{ activeConv.hotel.name }}</span>
               </div>
-              <!-- Report button for hotel admin -->
-              <button
-                v-if="isHotelAdmin && activeConv.user_id !== currentUserId"
-                @click="reportUser"
-                class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                <i class="bi bi-flag me-1"></i>{{ t('hotel_admin.report_user') }}
-              </button>
+              <div class="d-flex gap-1 flex-shrink-0">
+                <!-- Report button for hotel admin -->
+                <button
+                  v-if="isHotelAdmin && activeConv.user_id !== currentUserId"
+                  @click="reportUser"
+                  class="btn btn-outline-danger btn-sm rounded-pill px-2"
+                  :title="t('hotel_admin.report_user')">
+                  <i class="bi bi-flag"></i><span class="d-none d-lg-inline ms-1">{{ t('hotel_admin.report_user') }}</span>
+                </button>
+                <!-- Warn button for super_admin -->
+                <button
+                  v-if="isSuperAdmin && activeConv.user_id !== currentUserId"
+                  @click="warnUser"
+                  class="btn btn-outline-warning btn-sm rounded-pill px-2"
+                  :title="t('hotel_admin.warn_user')">
+                  <i class="bi bi-exclamation-triangle"></i><span class="d-none d-lg-inline ms-1">{{ t('hotel_admin.warn_user') }}</span>
+                </button>
+                <!-- Delete conversation button for super_admin -->
+                <button
+                  v-if="isSuperAdmin"
+                  @click="deleteConversation"
+                  class="btn btn-outline-danger btn-sm rounded-pill px-2"
+                  :title="t('chat.delete_conversation')">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
             </div>
+            <div class="text-muted small d-md-none text-truncate" v-if="activeConv.hotel">{{ activeConv.hotel.name }}</div>
           </div>
 
           <!-- Messages -->
@@ -70,6 +120,13 @@
                 msg.sender && msg.sender.role === 'hotel_admin' ? 'message-role-hotel' : '',
                 msg.sender && msg.sender.role === 'super_admin' ? 'message-role-superadmin' : ''
               ]">
+              <button
+                v-if="canDeleteMessage(msg)"
+                @click="deleteMessage(msg)"
+                class="msg-delete-btn"
+                :title="t('chat.delete_message')">
+                <i class="bi bi-x-lg"></i>
+              </button>
               <div class="message-sender small fw-bold mb-1" v-if="msg.sender">
                 {{ msg.sender.name }}
                 <span v-if="msg.sender.role === 'admin'" class="badge-role badge-admin">Admin</span>
@@ -115,7 +172,23 @@ export default {
       newMessage: '',
       currentUserId: null,
       isHotelAdmin: false,
+      isSuperAdmin: false,
+      searchQuery: '',
+      mobileSearchOpen: false,
+      isAdmin: false,
       pollInterval: null
+    }
+  },
+  computed: {
+    filteredConversations() {
+      if (!this.searchQuery || !this.searchQuery.trim()) return this.conversations;
+      const q = this.searchQuery.trim().toLowerCase();
+      return this.conversations.filter(c => {
+        const userName = (c.user && c.user.name) ? c.user.name.toLowerCase() : '';
+        const userEmail = (c.user && c.user.email) ? c.user.email.toLowerCase() : '';
+        const hotelName = (c.hotel && c.hotel.name) ? c.hotel.name.toLowerCase() : '';
+        return userName.includes(q) || userEmail.includes(q) || hotelName.includes(q);
+      });
     }
   },
   methods: {
@@ -126,9 +199,57 @@ export default {
       return this.activeConv && this.activeConv.hotel_id === conv.hotel_id && this.activeConv.user_id === conv.user_id;
     },
     getConvName(conv) {
-      if (this.isHotelAdmin && conv.user) return conv.user.name;
+      if ((this.isHotelAdmin || this.isSuperAdmin) && conv.user) return conv.user.name;
       if (conv.hotel) return conv.hotel.name;
       return '...';
+    },
+
+    canDeleteMessage(msg) {
+      return msg.sender_id === this.currentUserId || this.isSuperAdmin;
+    },
+
+    async deleteMessage(msg) {
+      const result = await Swal.fire({
+        title: this.t('chat.delete_message'),
+        text: this.t('chat.delete_message_confirm'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: this.t('chat.delete_message'),
+        cancelButtonText: this.t('common.cancel'),
+        confirmButtonColor: '#e76f51',
+      });
+      if (!result.isConfirmed) return;
+      try {
+        await api.deleteMessage(msg.id);
+        this.messages = this.messages.filter(m => m.id !== msg.id);
+        Swal.fire({ icon: 'success', title: this.t('chat.delete_message_success'), timer: 1500, showConfirmButton: false });
+      } catch (e) {
+        Swal.fire({ icon: 'error', title: this.t('common.error'), confirmButtonColor: '#e76f51' });
+      }
+    },
+
+    async deleteConversation() {
+      if (!this.activeConv) return;
+      const result = await Swal.fire({
+        title: this.t('chat.delete_conversation'),
+        text: this.t('chat.delete_conversation_confirm'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: this.t('chat.delete_conversation'),
+        cancelButtonText: this.t('common.cancel'),
+        confirmButtonColor: '#e76f51',
+      });
+      if (!result.isConfirmed) return;
+      try {
+        await api.deleteConversation(this.activeConv.hotel_id, this.activeConv.user_id);
+        const key = this.convKey(this.activeConv);
+        this.conversations = this.conversations.filter(c => this.convKey(c) !== key);
+        this.activeConv = null;
+        this.messages = [];
+        Swal.fire({ icon: 'success', title: this.t('chat.delete_conversation_success'), timer: 1500, showConfirmButton: false });
+      } catch (e) {
+        Swal.fire({ icon: 'error', title: this.t('common.error'), confirmButtonColor: '#e76f51' });
+      }
     },
 
     async fetchConversations() {
@@ -155,7 +276,7 @@ export default {
           hotel_id: this.activeConv.hotel_id,
           message: this.newMessage,
         };
-        if (this.isHotelAdmin) {
+        if (this.activeConv.user_id && this.activeConv.user_id !== this.currentUserId) {
           data.user_id = this.activeConv.user_id;
         }
         const msg = await api.sendMessage(data);
@@ -171,11 +292,54 @@ export default {
       if (!this.activeConv) return;
       try {
         const msgs = await api.getMessages(this.activeConv.hotel_id, this.activeConv.user_id);
-        if (msgs.length > this.messages.length) {
+        if (msgs.length !== this.messages.length) {
+          const shouldScroll = msgs.length > this.messages.length;
           this.messages = msgs;
-          this.$nextTick(() => this.scrollToBottom());
+          if (shouldScroll) this.$nextTick(() => this.scrollToBottom());
         }
       } catch (e) { /* silent */ }
+    },
+
+    async warnUser() {
+      if (!this.activeConv || !this.activeConv.user_id) return;
+      const reasonOptions = ['disrespect', 'inappropriate', 'profanity', 'other']
+        .map(r => `<option value="${this.t('hotel_admin.report_reasons.' + r)}">${this.t('hotel_admin.report_reasons.' + r)}</option>`)
+        .join('');
+
+      const { value: formValues } = await Swal.fire({
+        title: this.t('hotel_admin.warn_user'),
+        html:
+          `<div class="text-start">
+            <p class="small text-muted">${this.t('hotel_admin.warn_user_confirm')}</p>
+            <label class="form-label fw-semibold small">${this.t('warnings.warn_reason')}</label>
+            <select id="swal-warn-reason-select" class="form-select mb-2">${reasonOptions}</select>
+            <textarea id="swal-warn-desc" class="form-control" rows="3" placeholder="${this.t('warnings.warn_reason_placeholder')}"></textarea>
+          </div>`,
+        showCancelButton: true,
+        confirmButtonText: this.t('hotel_admin.warn_user'),
+        cancelButtonText: this.t('common.cancel'),
+        confirmButtonColor: '#e76f51',
+        preConfirm: () => {
+          const selected = document.getElementById('swal-warn-reason-select').value;
+          const desc = document.getElementById('swal-warn-desc').value.trim();
+          return {
+            user_id: this.activeConv.user_id,
+            reason: desc ? (selected + ' — ' + desc) : selected,
+          };
+        }
+      });
+
+      if (formValues) {
+        try {
+          const res = await api.issueWarning(formValues);
+          const msg = res.suspended_until
+            ? this.t('warnings.warn_suspended')
+            : this.t('warnings.warn_success');
+          Swal.fire({ icon: 'success', title: msg, timer: 2000, showConfirmButton: false });
+        } catch (e) {
+          Swal.fire({ icon: 'error', title: this.t('common.error'), confirmButtonColor: '#e76f51' });
+        }
+      }
     },
 
     async reportUser() {
@@ -257,6 +421,8 @@ export default {
       const u = JSON.parse(userData);
       this.currentUserId = u.id;
       this.isHotelAdmin = u.role === 'hotel_admin';
+      this.isAdmin = u.role === 'admin';
+      this.isSuperAdmin = u.role === 'super_admin';
     }
     this.fetchConversations();
     this.initFromQuery();
@@ -326,7 +492,27 @@ export default {
   padding: 0.6rem 1rem;
   border-radius: 16px;
   word-wrap: break-word;
+  position: relative;
 }
+.msg-delete-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: #e76f51;
+  color: #fff;
+  font-size: 0.65rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.message-bubble:hover .msg-delete-btn { display: flex; }
+.msg-delete-btn:hover { background: #d85a3a; }
 .message-sent {
   align-self: flex-end;
   background: linear-gradient(135deg, #2a9d8f, #264653);
@@ -368,6 +554,7 @@ export default {
 .message-role-admin.message-received { border-left: 3px solid #e9c46a; }
 .message-role-hotel.message-received { border-left: 3px solid #2a9d8f; }
 .message-role-superadmin.message-received { border-left: 3px solid #e76f51; }
+
 .chat-input {
   padding: 0.75rem 1rem;
   border-top: 1px solid #eee;

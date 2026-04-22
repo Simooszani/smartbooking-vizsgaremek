@@ -33,9 +33,9 @@ class UserFactory extends Factory
 
     public function definition(): array
     {
-        $isMale = $this->faker->boolean();
-        $firstName = $this->faker->randomElement($isMale ? self::$firstNamesMale : self::$firstNamesFemale);
-        $lastName = $this->faker->randomElement(self::$lastNames);
+        $isMale = fake()->boolean();
+        $firstName = fake()->randomElement($isMale ? self::$firstNamesMale : self::$firstNamesFemale);
+        $lastName = fake()->randomElement(self::$lastNames);
         $name = $lastName . ' ' . $firstName;
 
         return [

@@ -1,5 +1,10 @@
 <template>
   <div class="home-page">
+    <!-- Decorative blurred background elements -->
+    <div class="deco-blob deco-blob-1"></div>
+    <div class="deco-blob deco-blob-2"></div>
+    <div class="deco-blob deco-blob-3"></div>
+
     <!-- Hero Carousel -->
     <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
       <div class="carousel-indicators">
@@ -60,7 +65,7 @@
     <!-- Footer -->
     <footer class="footer-section mt-5">
       <div class="container text-center py-4">
-        <p class="mb-0 text-muted small">&copy; 2026 SmartBooking. All rights reserved.</p>
+        <p class="mb-0 text-muted small">&copy; 2026 SmartBooking. {{ t('footer.rights') }}</p>
       </div>
     </footer>
   </div>
@@ -80,6 +85,43 @@ export default {
 <style scoped>
 .home-page {
   min-height: 100vh;
+  background: linear-gradient(180deg, #f8f9fa 0%, #eef2f7 40%, #e8eff8 70%, #f0f4f8 100%);
+  position: relative;
+  overflow: hidden;
+}
+.deco-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.deco-blob-1 {
+  top: 480px;
+  left: -100px;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(42,157,143,0.15) 0%, transparent 70%);
+  filter: blur(80px);
+}
+.deco-blob-2 {
+  top: 550px;
+  right: -60px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(233,196,106,0.12) 0%, transparent 70%);
+  filter: blur(80px);
+}
+.deco-blob-3 {
+  top: 750px;
+  left: 30%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(231,111,81,0.08) 0%, transparent 70%);
+  filter: blur(80px);
+}
+.home-page > *:not(.deco-blob) {
+  position: relative;
+  z-index: 1;
 }
 
 /* Carousel */
@@ -140,21 +182,30 @@ export default {
   font-size: 1.5rem;
 }
 
-@media (max-width: 768px) {
-  .hero-slide { height: 350px; }
-  .hero-title { font-size: 2rem; }
-  .hero-subtitle { font-size: 1rem; }
-  .search-card { margin-top: -40px; padding: 1.5rem; }
-  .search-title { font-size: 1.2rem; }
+/* Footer */
+.footer-section {
+  background: linear-gradient(135deg, #264653 0%, #1a1a2e 100%);
+  color: rgba(255,255,255,0.7);
+  margin-top: auto;
+}
+.footer-section p {
+  color: rgba(255,255,255,0.6) !important;
+}
+
+@media (max-width: 767.98px) {
+  .hero-slide { height: 300px; }
+  .hero-title { font-size: 1.6rem; padding: 0 1rem; }
+  .hero-subtitle { font-size: 0.95rem; padding: 0 1rem; }
+  .search-card { margin-top: -30px; padding: 1.25rem; border-radius: 14px; }
+  .search-title { font-size: 1.15rem; }
+  .carousel-control-prev, .carousel-control-next { display: none; }
 }
 
 @media (max-width: 576px) {
-  .hero-slide { height: 280px; }
-  .hero-title { font-size: 1.5rem; }
-  .hero-subtitle { font-size: 0.9rem; }
-  .search-card { margin-top: -30px; padding: 1rem; border-radius: 14px; }
-  .search-title { font-size: 1.1rem; }
-  .carousel-control-prev-icon,
-  .carousel-control-next-icon { width: 30px; height: 30px; }
+  .hero-slide { height: 250px; }
+  .hero-title { font-size: 1.3rem; }
+  .hero-subtitle { font-size: 0.85rem; }
+  .search-card { margin-top: -25px; padding: 1rem; }
+  .search-title { font-size: 1rem; }
 }
 </style>

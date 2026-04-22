@@ -21,12 +21,12 @@ class RoomFactory extends Factory
             ['type' => 'Prémium Kétágyas', 'capacity' => 2, 'price' => [28000, 45000]],
         ];
 
-        $config = $this->faker->randomElement($roomConfigs);
+        $config = fake()->randomElement($roomConfigs);
 
         return [
             'type' => $config['type'],
             'capacity' => $config['capacity'],
-            'price_per_night' => $this->faker->numberBetween($config['price'][0], $config['price'][1]),
+            'price_per_night' => fake()->numberBetween($config['price'][0], $config['price'][1]),
         ];
     }
 }

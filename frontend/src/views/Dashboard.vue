@@ -8,9 +8,9 @@
       </div>
 
       <template v-else>
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
           <div>
-            <h1 class="h3 mb-0 fw-bold text-primary-dark">
+            <h1 class="h4 mb-0 fw-bold text-primary-dark">
               <i class="bi bi-calendar-check me-2"></i>{{ t('dashboard.title') }}
             </h1>
           </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Warning;
 use App\Models\User;
 use App\Models\Report;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -55,6 +56,18 @@ class WarningController extends Controller
             $targetUser->update(['suspended_until' => $suspendedUntil]);
         }
 
+        // Notification to the warned user
+        Notification::create([
+            'user_id' => $targetUser->id,
+            'type' => 'warning',
+            'message' => json_encode([
+                'reason' => $request->reason,
+                'warning_count' => $warningCount,
+                'suspended_until' => $suspendedUntil ? $suspendedUntil->toIso8601String() : null,
+                'manual' => true,
+            ]),
+        ]);
+
         return response()->json([
             'warning' => $warning,
             'warning_count' => $warningCount,
@@ -79,10 +92,14 @@ class WarningController extends Controller
         ]);
     }
 
-    // Admin: list all warned users overview
+    // Admin: list all warned users overview (excluding auto-expired warnings)
     public function index()
     {
+        // Auto-expire: only count warnings from last 3 months
+        $threeMonthsAgo = Carbon::now()->subMonths(3);
+
         $warnedUsers = Warning::select('user_id')
+            ->where('created_at', '>=', $threeMonthsAgo)
             ->selectRaw('COUNT(*) as warning_count')
             ->selectRaw('MAX(created_at) as last_warning_at')
             ->groupBy('user_id')
@@ -91,5 +108,29 @@ class WarningController extends Controller
             ->get();
 
         return response()->json($warnedUsers);
+    }
+
+    // Admin: delete a specific warning
+    public function destroy($id)
+    {
+        $warning = Warning::findOrFail($id);
+        $userId = $warning->user_id;
+        $warning->delete();
+
+        // Recalculate suspension based on remaining active warnings (last 3 months)
+        $threeMonthsAgo = Carbon::now()->subMonths(3);
+        $activeCount = Warning::where('user_id', $userId)
+            ->where('created_at', '>=', $threeMonthsAgo)
+            ->count();
+
+        $user = User::findOrFail($userId);
+        if ($activeCount < 3) {
+            $user->update(['suspended_until' => null]);
+        }
+
+        return response()->json([
+            'message' => 'Figyelmeztetés törölve.',
+            'remaining_count' => $activeCount,
+        ]);
     }
 }

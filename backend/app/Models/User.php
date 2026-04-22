@@ -18,6 +18,7 @@ class User extends Authenticatable
         'role',
         'managed_hotel_id',
         'suspended_until',
+        'admin_city',
     ];
 
     protected $hidden = [

@@ -2,13 +2,13 @@
   <div class="d-flex bg-light min-vh-100">
     <AdminSidebar />
 
-    <div class="main-content flex-grow-1 p-4" style="margin-left: 260px;">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="main-content flex-grow-1 p-3 p-md-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
-          <h2 class="fw-bold text-primary-dark m-0">{{ t('admin.rooms_management') }}</h2>
+          <h2 class="fw-bold text-primary-dark m-0 h3-responsive">{{ t('admin.rooms_management') }}</h2>
           <p class="text-muted small mb-0">{{ t('admin.rooms_desc') }}</p>
         </div>
-        <button @click="openCreateModal" class="btn btn-teal shadow-sm px-4 py-2 rounded-pill">
+        <button @click="openCreateModal" class="btn btn-teal shadow-sm px-3 py-2 rounded-pill">
           <i class="bi bi-plus-lg me-2"></i>{{ t('admin.add_room') }}
         </button>
       </div>
@@ -24,16 +24,14 @@
         </div>
       </div>
 
-      <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-0 text-center" v-if="loading">
-          <div class="p-5">
-            <div class="spinner-border text-teal" role="status"></div>
-            <p class="mt-2 text-muted">{{ t('admin.loading_rooms') }}</p>
-          </div>
-        </div>
+      <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-teal" role="status"></div>
+        <p class="mt-2 text-muted">{{ t('admin.loading_rooms') }}</p>
+      </div>
 
-        <div class="card-body p-0" v-else>
-          <div class="table-responsive">
+      <!-- Desktop table -->
+      <div v-else class="card shadow-sm border-0 rounded-3 d-none d-md-block">
+        <div class="card-body p-0 table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -52,7 +50,10 @@
                   <div class="fw-bold text-dark small">{{ room.hotel ? room.hotel.name : t('admin.unknown_hotel') }}</div>
                   <small class="text-muted" v-if="room.hotel"><i class="bi bi-geo-alt"></i> {{ room.hotel.address }}</small>
                 </td>
-                <td><span :class="getRoomClass(room.type)" class="badge px-2 py-1">{{ room.type }}</span></td>
+                <td>
+                  <span :class="getRoomClass(room.type)" class="badge px-2 py-1">{{ room.type }}</span>
+                  <span v-if="hasMultipleOfType[room.hotel_id + '_' + room.type] > 1" class="badge bg-light text-dark border ms-1">#{{ room.roomNumber }}</span>
+                </td>
                 <td><i class="bi bi-people-fill me-1 text-muted"></i> {{ room.capacity }} {{ t('admin.person') }}</td>
                 <td class="fw-bold">{{ Number(room.price_per_night).toLocaleString('hu-HU') }} Ft</td>
                 <td class="text-center">
@@ -71,8 +72,41 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Mobile card layout -->
+      <div v-if="!loading" class="d-md-none">
+        <div v-for="room in filteredRooms" :key="'m'+room.id" class="card shadow-sm border-0 rounded-3 mb-3">
+          <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="fw-bold text-teal">#{{ room.id }}</span>
+                <span :class="getRoomClass(room.type)" class="badge px-2 py-1 ms-2">{{ room.type }}</span>
+                <span v-if="hasMultipleOfType[room.hotel_id + '_' + room.type] > 1" class="badge bg-light text-dark border ms-1">#{{ room.roomNumber }}</span>
+              </div>
+              <span class="fw-bold">{{ Number(room.price_per_night).toLocaleString('hu-HU') }} Ft</span>
+            </div>
+            <div class="small mb-1">
+              <span class="fw-bold text-dark">{{ room.hotel ? room.hotel.name : t('admin.unknown_hotel') }}</span>
+            </div>
+            <div class="text-muted small mb-2" v-if="room.hotel">
+              <i class="bi bi-geo-alt me-1"></i>{{ room.hotel.address }}
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small"><i class="bi bi-people-fill me-1 text-muted"></i>{{ room.capacity }} {{ t('admin.person') }}</span>
+              <div class="d-flex gap-2">
+                <button @click="openEditModal(room)" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button @click="handleDelete(room.id)" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
+        <div v-if="filteredRooms.length === 0" class="text-center py-4 text-muted">{{ t('admin.no_search_result') }}</div>
       </div>
     </div>
   </div>
@@ -95,14 +129,31 @@ export default {
     }
   },
   computed: {
+    numberedRooms() {
+      const counters = {};
+      return this.rooms.map(room => {
+        const key = room.hotel_id + '_' + room.type;
+        counters[key] = (counters[key] || 0) + 1;
+        return { ...room, roomNumber: counters[key] };
+      });
+    },
     filteredRooms() {
-      if (!this.searchQuery) return this.rooms;
+      const rooms = this.numberedRooms;
+      if (!this.searchQuery) return rooms;
       const q = this.searchQuery.toLowerCase();
-      return this.rooms.filter(room =>
+      return rooms.filter(room =>
         (room.hotel && room.hotel.name.toLowerCase().includes(q)) ||
         (room.type && room.type.toLowerCase().includes(q)) ||
         (room.hotel && room.hotel.address && room.hotel.address.toLowerCase().includes(q))
       );
+    },
+    hasMultipleOfType() {
+      const counts = {};
+      this.rooms.forEach(r => {
+        const key = r.hotel_id + '_' + r.type;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      return counts;
     }
   },
   methods: {
@@ -248,7 +299,10 @@ export default {
 .text-teal { color: #2a9d8f; }
 .btn-teal { background: #2a9d8f; color: #fff; border: none; font-weight: 600; }
 .btn-teal:hover { background: #238b7e; color: #fff; }
-@media (max-width: 768px) {
-  .main-content { margin-left: 0 !important; }
+.main-content { margin-left: 260px; }
+.h3-responsive { font-size: 1.5rem; }
+@media (max-width: 767.98px) {
+  .main-content { margin-left: 0 !important; padding-top: 70px !important; }
+  .h3-responsive { font-size: 1.15rem; }
 }
 </style>

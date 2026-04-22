@@ -102,6 +102,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'Saját magadat nem törölheted!'], 403);
         }
 
+        // Admin nem törölheti a super_admin-t
+        if ($user->isSuperAdmin() && !auth()->user()->isSuperAdmin()) {
+            return response()->json(['message' => 'Nincs jogosultságod a főadmin törléséhez!'], 403);
+        }
+
         $user->delete();
         return response()->json(['message' => 'Felhasználó sikeresen törölve']);
     }
@@ -111,11 +116,19 @@ class AuthController extends Controller
         $request->validate([
             'role' => 'required|in:user,hotel_admin,admin,super_admin',
             'managed_hotel_id' => 'nullable|exists:hotels,id',
+            'admin_city' => 'nullable|string|max:255',
         ]);
 
         $currentUser = Auth::user();
         $targetUser = User::findOrFail($id);
         $newRole = $request->role;
+
+        // Admin nem módosíthatja a super_admin-t
+        if ($targetUser->isSuperAdmin() && !$currentUser->isSuperAdmin()) {
+            return response()->json([
+                'message' => 'Nincs jogosultságod a főadmin módosításához!'
+            ], 403);
+        }
 
         // Csak super_admin adhat admin vagy super_admin jogot
         if (in_array($newRole, ['admin', 'super_admin']) && !$currentUser->isSuperAdmin()) {
@@ -133,6 +146,7 @@ class AuthController extends Controller
 
         $targetUser->role = $newRole;
         $targetUser->managed_hotel_id = ($newRole === 'hotel_admin') ? $request->managed_hotel_id : null;
+        $targetUser->admin_city = ($newRole === 'admin') ? $request->admin_city : null;
         $targetUser->save();
 
         return response()->json($targetUser->load('managedHotel'));

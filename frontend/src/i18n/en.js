@@ -37,6 +37,7 @@ export default {
     write_review: 'Write a review',
     no_reviews: 'No reviews yet.',
     rating: 'Rating',
+    all_stars: 'All',
   },
   review: {
     title: 'Write a review',

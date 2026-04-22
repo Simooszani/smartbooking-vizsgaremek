@@ -138,18 +138,24 @@
 
                 <!-- Reviews -->
                 <div class="reviews-section p-4 border-top" v-if="hotel.reviews">
-                  <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold text-primary-dark mb-0">
-                      <i class="bi bi-chat-quote me-2"></i>{{ t('hotel.reviews') }}
-                      <span class="badge bg-light text-muted ms-2" v-if="hotel.reviews.length">{{ hotel.reviews.length }}</span>
-                    </h5>
+                  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <h5 class="fw-bold text-primary-dark mb-0">
+                        <i class="bi bi-chat-quote me-2"></i>{{ t('hotel.reviews') }}
+                        <span class="badge bg-light text-muted ms-2" v-if="filteredReviews(hotel).length">{{ filteredReviews(hotel).length }}</span>
+                      </h5>
+                      <select class="form-select form-select-sm review-filter-select" @click.stop @change.stop="setReviewFilter(hotel.id, $event.target.value)" :value="reviewFilters[hotel.id] || 'all'">
+                        <option value="all">{{ t('hotel.all_stars') }}</option>
+                        <option v-for="s in 5" :key="s" :value="s">{{ s }} &#9733;</option>
+                      </select>
+                    </div>
                     <button @click.stop="openReviewModal(hotel)" class="btn btn-sm btn-outline-teal rounded-pill px-3">
                       <i class="bi bi-pencil-square me-1"></i>{{ t('hotel.write_review') }}
                     </button>
                   </div>
-                  <div v-if="hotel.reviews.length > 0">
+                  <div v-if="filteredReviews(hotel).length > 0">
                     <div class="row g-2">
-                      <div class="col-md-6" v-for="rev in hotel.reviews.slice(0, 4)" :key="rev.id">
+                      <div class="col-md-6" v-for="rev in paginatedReviews(hotel)" :key="rev.id">
                         <div class="review-card">
                           <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-semibold small">{{ rev.user ? rev.user.name : 'Anonymous' }}</span>
@@ -160,6 +166,15 @@
                           <p class="review-text mb-0">"{{ rev.comment }}"</p>
                         </div>
                       </div>
+                    </div>
+                    <div v-if="reviewTotalPages(hotel) > 1" class="d-flex justify-content-center align-items-center gap-3 mt-3">
+                      <button @click.stop="changeReviewPage(hotel.id, -1)" class="btn btn-sm btn-outline-secondary rounded-circle review-nav-btn" :disabled="getReviewPage(hotel.id) === 0">
+                        <i class="bi bi-chevron-left"></i>
+                      </button>
+                      <span class="small text-muted">{{ getReviewPage(hotel.id) + 1 }} / {{ reviewTotalPages(hotel) }}</span>
+                      <button @click.stop="changeReviewPage(hotel.id, 1)" class="btn btn-sm btn-outline-secondary rounded-circle review-nav-btn" :disabled="getReviewPage(hotel.id) >= reviewTotalPages(hotel) - 1">
+                        <i class="bi bi-chevron-right"></i>
+                      </button>
                     </div>
                   </div>
                   <p v-else class="text-muted small">{{ t('hotel.no_reviews') }}</p>
@@ -193,7 +208,9 @@ export default {
       searched: false,
       searching: false,
       expandedHotel: null,
-      openCategories: {}
+      openCategories: {},
+      reviewPages: {},
+      reviewFilters: {}
     }
   },
   computed: {
@@ -271,6 +288,31 @@ export default {
       return Math.ceil((new Date(this.search.check_out) - new Date(this.search.check_in)) / 86400000);
     },
 
+    filteredReviews(hotel) {
+      const filter = this.reviewFilters[hotel.id];
+      if (!hotel.reviews) return [];
+      if (!filter || filter === 'all') return hotel.reviews;
+      return hotel.reviews.filter(r => r.rating === parseInt(filter));
+    },
+    paginatedReviews(hotel) {
+      const reviews = this.filteredReviews(hotel);
+      const page = this.getReviewPage(hotel.id);
+      return reviews.slice(page * 4, (page + 1) * 4);
+    },
+    reviewTotalPages(hotel) {
+      return Math.ceil(this.filteredReviews(hotel).length / 4);
+    },
+    getReviewPage(hotelId) {
+      return this.reviewPages[hotelId] || 0;
+    },
+    changeReviewPage(hotelId, dir) {
+      const current = this.getReviewPage(hotelId);
+      this.$set(this.reviewPages, hotelId, current + dir);
+    },
+    setReviewFilter(hotelId, value) {
+      this.$set(this.reviewFilters, hotelId, value);
+      this.$set(this.reviewPages, hotelId, 0);
+    },
     getMinPrice(hotel) {
       if (!hotel.rooms || hotel.rooms.length === 0) return '—';
       const min = Math.min(...hotel.rooms.map(r => Number(r.price_per_night)));
@@ -577,6 +619,22 @@ export default {
 }
 .review-text { font-style: italic; font-size: 0.85rem; color: #555; }
 .review-stars { font-size: 0.75rem; }
+.review-filter-select {
+  width: auto;
+  min-width: 80px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  padding: 2px 10px;
+  border-color: #dee2e6;
+}
+.review-nav-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
 
 /* Slide transition */
 .slide-enter-active, .slide-leave-active {

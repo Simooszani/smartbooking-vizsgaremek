@@ -37,6 +37,7 @@ export default {
     write_review: 'Vélemény írása',
     no_reviews: 'Még nincsenek vélemények.',
     rating: 'Értékelés',
+    all_stars: 'Összes',
   },
   review: {
     title: 'Vélemény írása',

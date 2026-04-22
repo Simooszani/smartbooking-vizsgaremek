@@ -77,7 +77,12 @@
               </div>
             </template>
           </div>
-          <div v-if="!n.is_read" class="unread-dot ms-2"></div>
+          <div class="d-flex flex-column align-items-center ms-2 gap-1">
+            <div v-if="!n.is_read" class="unread-dot"></div>
+            <button @click.stop="deleteNotification(n)" class="btn btn-sm btn-outline-danger rounded-circle p-0 notif-delete-btn" :title="t('common.delete')">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -126,6 +131,15 @@ export default {
       try {
         await api.markAllNotificationsRead();
         this.notifications.forEach(n => n.is_read = true);
+      } catch (e) {
+        // silent
+      }
+    },
+
+    async deleteNotification(n) {
+      try {
+        await api.deleteNotification(n.id);
+        this.notifications = this.notifications.filter(x => x.id !== n.id);
       } catch (e) {
         // silent
       }
@@ -258,6 +272,18 @@ export default {
   border-radius: 50%;
   background: #2a9d8f;
   flex-shrink: 0;
-  margin-top: 6px;
+}
+.notif-delete-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+.notification-card:hover .notif-delete-btn {
+  opacity: 1;
 }
 </style>

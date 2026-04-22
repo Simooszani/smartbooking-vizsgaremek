@@ -35,6 +35,7 @@ Route::middleware(['auth:sanctum', 'check_suspension'])->group(function () {
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
     // Chat üzenetek
     Route::get('/messages/conversations', [MessageController::class, 'conversations']);

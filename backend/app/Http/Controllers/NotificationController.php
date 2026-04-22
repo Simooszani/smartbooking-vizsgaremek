@@ -41,6 +41,18 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Összes értesítés olvasottnak jelölve']);
     }
 
+    // Értesítés törlése
+    public function destroy($id)
+    {
+        $notification = Notification::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $notification->delete();
+
+        return response()->json(['message' => 'Értesítés törölve.']);
+    }
+
     // Olvasatlan értesítések száma
     public function unreadCount()
     {

@@ -290,6 +290,15 @@ const api = {
         return await response.json();
     },
 
+    async deleteNotification(id) {
+        const response = await fetch(`${BASE_URL}/notifications/${id}`, {
+            method: 'DELETE',
+            headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error('Hiba');
+        return await response.json();
+    },
+
     async markAllNotificationsRead() {
         const response = await fetch(`${BASE_URL}/notifications/read-all`, {
             method: 'PUT',

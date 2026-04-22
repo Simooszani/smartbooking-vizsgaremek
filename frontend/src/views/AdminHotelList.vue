@@ -72,9 +72,14 @@
                   </span>
                 </td>
                 <td class="text-center">
-                  <button @click="handleDelete(hotel.id)" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                    <i class="bi bi-trash me-1"></i>{{ t('common.delete') }}
-                  </button>
+                  <div class="d-flex justify-content-center gap-2">
+                    <button @click="openEditModal(hotel)" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button @click="handleDelete(hotel.id)" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
               <tr v-if="filteredHotels.length === 0">
@@ -109,9 +114,12 @@
             <div v-if="hotel.description" class="text-muted small mb-2">
               {{ hotel.description.length > 80 ? hotel.description.substring(0, 80) + '...' : hotel.description }}
             </div>
-            <div class="text-end">
+            <div class="d-flex justify-content-end gap-2">
+              <button @click="openEditModal(hotel)" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                <i class="bi bi-pencil-square"></i>
+              </button>
               <button @click="handleDelete(hotel.id)" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                <i class="bi bi-trash me-1"></i>{{ t('common.delete') }}
+                <i class="bi bi-trash"></i>
               </button>
             </div>
           </div>
@@ -200,6 +208,49 @@ export default {
           this.fetchHotels();
         } catch (e) {
           Swal.fire({ icon: 'error', title: this.t('admin.error'), text: this.t('admin.hotel_add_error'), confirmButtonColor: '#e76f51' });
+        }
+      }
+    },
+
+    async openEditModal(hotel) {
+      const { value: formValues } = await Swal.fire({
+        title: this.t('admin.edit_room'),
+        html:
+          `<div class="text-start">
+            <label class="form-label fw-semibold small">${this.t('admin.hotel_name_label')}</label>
+            <input id="swal-name" class="form-control mb-2" value="${hotel.name}">
+            <label class="form-label fw-semibold small mt-2">${this.t('admin.hotel_address')}</label>
+            <input id="swal-address" class="form-control mb-2" value="${hotel.address}">
+            <label class="form-label fw-semibold small mt-2">${this.t('admin.hotel_description')}</label>
+            <textarea id="swal-description" class="form-control" rows="3">${hotel.description || ''}</textarea>
+          </div>`,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: this.t('admin.save'),
+        cancelButtonText: this.t('common.cancel'),
+        confirmButtonColor: '#2a9d8f',
+        preConfirm: () => {
+          const name = document.getElementById('swal-name').value;
+          const address = document.getElementById('swal-address').value;
+          if (!name || !address) {
+            Swal.showValidationMessage(this.t('admin.hotel_required'));
+            return false;
+          }
+          return {
+            name: name,
+            address: address,
+            description: document.getElementById('swal-description').value
+          }
+        }
+      });
+
+      if (formValues) {
+        try {
+          await api.updateHotel(hotel.id, formValues);
+          Swal.fire({ icon: 'success', title: this.t('admin.updated'), text: this.t('admin.room_updated'), timer: 1500, showConfirmButton: false });
+          this.fetchHotels();
+        } catch (e) {
+          Swal.fire({ icon: 'error', title: this.t('admin.error'), text: this.t('admin.save_error'), confirmButtonColor: '#e76f51' });
         }
       }
     },

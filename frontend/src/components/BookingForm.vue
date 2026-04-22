@@ -120,7 +120,10 @@
                               </div>
                               <div v-if="search.check_in && search.check_out" class="mt-1 small">
                                 <span class="fw-bold text-coral">{{ getNights() }} {{ t('booking.nights') }}: {{ (getNights() * Number(room.price_per_night)).toLocaleString('hu-HU') }} Ft</span>
-                                <span class="text-muted"> ({{ t('booking.tax_label') }}: {{ Math.round(getNights() * Number(room.price_per_night) * 0.05).toLocaleString('hu-HU') }} Ft)</span>
+                                <br>
+                                <span class="text-muted">{{ t('booking.tax_label') }}: {{ Math.round(getNights() * Number(room.price_per_night) * 0.05).toLocaleString('hu-HU') }} Ft</span>
+                                <br>
+                                <span class="fw-bold text-primary-dark">{{ t('booking.grand_total') }}: {{ (getNights() * Number(room.price_per_night) + Math.round(getNights() * Number(room.price_per_night) * 0.05)).toLocaleString('hu-HU') }} Ft</span>
                               </div>
                               <button @click.stop="bookRoom(hotel, room)" class="btn btn-coral btn-sm w-100 mt-2 rounded-pill">
                                 <i class="bi bi-calendar-plus me-1"></i>{{ t('hotel.select') }}
@@ -285,7 +288,10 @@ export default {
       }
 
       const token = localStorage.getItem('access_token');
-      if (!token) {
+      const userData = localStorage.getItem('user');
+      if (!token || !userData) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
         localStorage.setItem('pendingBooking', JSON.stringify({
           search: this.search
         }));
@@ -313,8 +319,10 @@ export default {
 
       const totalPrice = nights * Number(room.price_per_night);
       const tax = Math.round(totalPrice * 0.05);
+      const grandTotal = totalPrice + tax;
       const priceFormatted = totalPrice.toLocaleString('hu-HU');
       const taxFormatted = tax.toLocaleString('hu-HU');
+      const grandTotalFormatted = grandTotal.toLocaleString('hu-HU');
       const perNightFormatted = Number(room.price_per_night).toLocaleString('hu-HU');
 
       const { isConfirmed } = await Swal.fire({
@@ -324,9 +332,10 @@ export default {
           <p><strong>${hotel.name}</strong></p>
           <p>${room.type}</p>
           <hr>
-          <p>${nights} ${this.t('booking.nights')} × ${perNightFormatted} Ft</p>
-          <h4 class="fw-bold">${priceFormatted} Ft</h4>
-          <p class="text-muted small">(${this.t('booking.tax_label')}: ${taxFormatted} Ft)</p>
+          <p>${nights} ${this.t('booking.nights')} × ${perNightFormatted} Ft = <strong>${priceFormatted} Ft</strong></p>
+          <p>${this.t('booking.tax_label')}: ${taxFormatted} Ft</p>
+          <hr>
+          <h4 class="fw-bold" style="color: #264653;">${this.t('booking.grand_total')}: ${grandTotalFormatted} Ft</h4>
         </div>`,
         showCancelButton: true,
         confirmButtonText: this.t('booking.confirm_btn'),

@@ -198,6 +198,11 @@ export default {
       }
     }
   },
+  watch: {
+    '$route'() {
+      this.loadUser();
+    }
+  },
   mounted() {
     window.addEventListener('scroll', this.handleScroll);
     this.loadUser();

@@ -61,6 +61,8 @@ export default {
     confirm_title: 'Confirm Booking',
     confirm_btn: 'Confirm Booking',
     tax_label: 'VAT 5%',
+    total_price: 'Total Price',
+    grand_total: 'Total',
     max_nights_title: 'Booking too long',
     max_nights_text: 'Maximum 31 nights can be booked.',
   },

@@ -8,6 +8,7 @@
             <th class="ps-4">{{ t('admin.booking_code_label') }}</th>
             <th>{{ t('dashboard.hotel') }}</th>
             <th>{{ t('dashboard.period') }}</th>
+            <th class="text-end">{{ t('booking.total_price') }}</th>
             <th class="text-center">{{ t('dashboard.guests') }}</th>
             <th class="text-center">{{ t('dashboard.status') }}</th>
             <th class="text-center">{{ t('dashboard.actions') }}</th>
@@ -34,6 +35,14 @@
               <div class="small">
                 <span class="text-muted">{{ t('date.check_out') }}:</span>
                 <span class="fw-semibold ms-1">{{ formatDate(b.check_out) }}</span>
+              </div>
+              <div class="small text-muted">({{ getNights(b) }} {{ t('booking.nights') }})</div>
+            </td>
+            <td>
+              <div v-if="b.room" class="text-end">
+                <div class="small text-muted">{{ getTotalPrice(b).toLocaleString('hu-HU') }} Ft</div>
+                <div class="small text-muted">{{ t('booking.tax_label') }}: {{ getTax(b).toLocaleString('hu-HU') }} Ft</div>
+                <div class="fw-bold text-primary-dark">{{ t('booking.grand_total') }}: {{ getGrandTotal(b).toLocaleString('hu-HU') }} Ft</div>
               </div>
             </td>
             <td class="text-center">
@@ -73,6 +82,11 @@
             <span class="fw-semibold">{{ formatDate(b.check_out) }}</span>
           </div>
         </div>
+        <div class="small text-muted mb-2">({{ getNights(b) }} {{ t('booking.nights') }})</div>
+        <div v-if="b.room" class="mb-2">
+          <div class="small text-muted">{{ getTotalPrice(b).toLocaleString('hu-HU') }} Ft + {{ t('booking.tax_label') }}: {{ getTax(b).toLocaleString('hu-HU') }} Ft</div>
+          <div class="fw-bold text-primary-dark">{{ t('booking.grand_total') }}: {{ getGrandTotal(b).toLocaleString('hu-HU') }} Ft</div>
+        </div>
         <div class="d-flex justify-content-between align-items-center">
           <span class="badge bg-light text-dark border">
             <i class="bi bi-people me-1"></i>{{ b.guests }} {{ t('dashboard.person') }}
@@ -100,6 +114,20 @@ export default {
         pending: 'bg-warning-light text-warning',
       };
       return map[status] || 'bg-success-light text-success';
+    },
+    getNights(b) {
+      if (!b.check_in || !b.check_out) return 0;
+      return Math.ceil((new Date(b.check_out) - new Date(b.check_in)) / 86400000);
+    },
+    getTotalPrice(b) {
+      if (!b.room) return 0;
+      return this.getNights(b) * Number(b.room.price_per_night);
+    },
+    getTax(b) {
+      return Math.round(this.getTotalPrice(b) * 0.05);
+    },
+    getGrandTotal(b) {
+      return this.getTotalPrice(b) + this.getTax(b);
     },
     formatDate(dateStr) {
       if (!dateStr) return '-';

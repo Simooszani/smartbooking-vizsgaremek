@@ -25,7 +25,7 @@ class HotelController extends Controller
 
     public function search(Request $request)
     {
-        $guests = $request->query('guests', 1);
+        $guests = (int) $request->query('guests', 1);
         $checkIn = $request->query('check_in');
         $checkOut = $request->query('check_out');
         $destination = $request->query('destination');
@@ -42,8 +42,8 @@ class HotelController extends Controller
         $hotels = $query->get();
 
         foreach ($hotels as $hotel) {
-            $hotel->rooms = $hotel->rooms->filter(function ($room) use ($guests, $checkIn, $checkOut) {
-                if ($room->capacity < $guests) return false;
+            $filtered = $hotel->rooms->filter(function ($room) use ($guests, $checkIn, $checkOut) {
+                if ((int) $room->capacity < $guests) return false;
 
                 if ($checkIn && $checkOut) {
                     $isOccupied = Booking::where('room_id', $room->id)
@@ -55,7 +55,8 @@ class HotelController extends Controller
                     if ($isOccupied) return false;
                 }
                 return true;
-            });
+            })->values();
+            $hotel->setRelation('rooms', $filtered);
         }
 
         return response()->json($hotels->filter(fn($h) => $h->rooms->count() > 0)->values());

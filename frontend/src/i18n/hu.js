@@ -61,6 +61,8 @@ export default {
     confirm_title: 'Foglalás megerősítése',
     confirm_btn: 'Foglalás megerősítése',
     tax_label: 'ÁFA 5%',
+    total_price: 'Összár',
+    grand_total: 'Összesen',
     max_nights_title: 'Túl hosszú foglalás',
     max_nights_text: 'Maximum 31 éjszakára lehet foglalni.',
   },

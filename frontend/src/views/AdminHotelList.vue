@@ -24,15 +24,14 @@
         </div>
       </div>
 
-      <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-0 text-center" v-if="loading">
-          <div class="p-5">
-            <div class="spinner-border text-teal" role="status"></div>
-            <p class="mt-2 text-muted">{{ t('common.loading') }}</p>
-          </div>
-        </div>
+      <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-teal" role="status"></div>
+        <p class="mt-2 text-muted">{{ t('common.loading') }}</p>
+      </div>
 
-        <div class="card-body p-0 table-responsive" v-else>
+      <!-- Desktop table -->
+      <div v-else class="card shadow-sm border-0 rounded-3 d-none d-md-block">
+        <div class="card-body p-0 table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -84,6 +83,40 @@
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- Mobile card layout -->
+      <div v-if="!loading" class="d-md-none">
+        <div v-for="hotel in filteredHotels" :key="'m'+hotel.id" class="card shadow-sm border-0 rounded-3 mb-3">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center mb-2">
+              <div class="hotel-thumb me-3">
+                <img :src="'https://picsum.photos/seed/hotel' + hotel.id + '/60/60'" :alt="hotel.name">
+              </div>
+              <div>
+                <div class="fw-bold">{{ hotel.name }}</div>
+                <span class="badge bg-accent-light text-dark">
+                  <i class="bi bi-star-fill text-warning me-1"></i>{{ hotel.rating || '—' }}
+                </span>
+                <span class="badge bg-teal-light text-teal ms-1">
+                  {{ hotel.rooms ? hotel.rooms.length : 0 }} {{ t('admin.pieces') }}
+                </span>
+              </div>
+            </div>
+            <div class="text-muted small mb-2">
+              <i class="bi bi-geo-alt me-1"></i>{{ hotel.address }}
+            </div>
+            <div v-if="hotel.description" class="text-muted small mb-2">
+              {{ hotel.description.length > 80 ? hotel.description.substring(0, 80) + '...' : hotel.description }}
+            </div>
+            <div class="text-end">
+              <button @click="handleDelete(hotel.id)" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                <i class="bi bi-trash me-1"></i>{{ t('common.delete') }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div v-if="filteredHotels.length === 0" class="text-center py-4 text-muted">{{ t('admin.no_search_result') }}</div>
       </div>
     </div>
   </div>
